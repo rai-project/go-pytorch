@@ -62,6 +62,12 @@ Predictor::Predictor(const string &model_file, int batch, torch::DeviceType mode
   mode_ = mode;
 
   // TODO should fetch width and height from model
+  //const torch::detail::OrderedDict<std::string, torch::jit::script::NamedModule>& net_module_dict = net_->get_modules();
+  //size_t net_module_dict_size = net_module_dict.size();
+  //CHECK((int)net_module_dict_size == 1) << "Number of modules - " << (int)net_module_dict_size;  
+  //const torch::jit::script::NamedModule& temp = net_module_dict.get("fc1"); 
+  //temp.module->get_method("fc1_script");  
+
   width_ = 224;
   height_ = 224;
   channels_ = 3;
@@ -179,16 +185,36 @@ void StartProfilingPytorch(PredictorContext pred, const char *name,
 }
 
 void EndProfilingPytorch(PredictorContext pred) {
-
+  auto predictor = (Predictor *)pred;
+  if(predictor == nullptr) {
+    return;
+  }
+  if(predictor->prof_) {
+    predictor->prof_->end();
+  }
 }
 
 void DisableProfilingPytorch(PredictorContext pred) {
-
+  auto predictor = (Predictor *)pred;
+  if(predictor == nullptr) {
+    return;
+  }
+  if(predictor->prof_) {
+    predictor->prof_->reset();
+  }
 }
 
 char *ReadProfilePytorch(PredictorContext pred) {
-  char* temp = NULL;
-  return temp;
+  auto predictor = (Predictor *)pred;
+  if (predictor == nullptr) {
+    return strdup("");
+  }
+  if (predictor->prof_ == nullptr) {
+    return strdup("");
+  }
+  const auto s = predictor->prof_->read();
+  const auto cstr = s.c_str();
+  return strdup(cstr);
 }
 
 int GetWidthPytorch(PredictorContext pred) {
