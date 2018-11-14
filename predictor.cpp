@@ -11,9 +11,6 @@
 #include <torch/torch.h>
 #include <torch/script.h>
 
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
-
 #include "json.hpp"
 #include "predictor.hpp"
 #include "timer.h"
@@ -28,7 +25,6 @@
 using namespace torch;
 using std::string;
 using json = nlohmann::json;
-using namespace cv;
 
 /* Pair (label, confidence) representing a prediction. */
 using Prediction = std::pair<int, float>;
