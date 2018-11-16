@@ -36,7 +36,7 @@ using Prediction = std::pair<int, float>;
 class Predictor {
   public:
     Predictor(const string &model_file, int batch, torch::DeviceType mode);
-    void Predict(float* imageData);
+    void Predict(float* inputData);
 
     std::shared_ptr<torch::jit::script::Module> net_;
     int width_, height_, channels_;
@@ -73,11 +73,11 @@ Predictor::Predictor(const string &model_file, int batch, torch::DeviceType mode
 
 }
 
-void Predictor::Predict(float* imageData) {
+void Predictor::Predict(float* inputData) {
 
   std::vector<int64_t> sizes = {1, 3, width_, height_};
   at::TensorOptions options(at::kFloat);
-  at::Tensor tensor_image = torch::from_blob(imageData, at::IntList(sizes), options);
+  at::Tensor tensor_image = torch::from_blob(inputData, at::IntList(sizes), options);
 
   std::vector<torch::jit::IValue> inputs;
 
@@ -130,12 +130,12 @@ void SetModePytorch(int mode) {
 
 void InitPytorch() {}
 
-void PredictPytorch(PredictorContext pred, float* imageData) {
+void PredictPytorch(PredictorContext pred, float* inputData) {
   auto predictor = (Predictor *)pred;
   if (predictor == nullptr) {
     return;
   }
-  predictor->Predict(imageData);
+  predictor->Predict(inputData);
   return;
 }
 

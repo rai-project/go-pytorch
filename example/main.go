@@ -14,15 +14,18 @@ import (
   "image"
   "context"
   "path/filepath"
+  "sort"
 
   "github.com/k0kubun/pp"
   "github.com/anthonynsimon/bild/imgio"
   "github.com/anthonynsimon/bild/transform"
 
   "github.com/rai-project/config"
+  "github.com/rai-project/dlframework"
   "github.com/rai-project/dlframework/framework/options"
+  "github.com/rai-project/dlframework/framework/feature"
   "github.com/rai-project/downloadmanager"
-  "github.com/go-pytorch/work"
+  "github.com/rai-project/go-pytorch"
   nvidiasmi "github.com/rai-project/nvidia-smi"
   "github.com/rai-project/tracer"
   _ "github.com/rai-project/tracer/all"
@@ -32,7 +35,7 @@ var (
   batchSize     = 1
   model         = "alexnet"
   graph_url     = "https://s3.amazonaws.com/store.carml.org/models/pytorch/alexnet.pt"
-  features_url  = "http://data.dmlc.ml/mxnet/models/imagenet/synset.txt"
+  synset_url  = "http://data.dmlc.ml/mxnet/models/imagenet/synset.txt"
 )
 
 // convert go Image to 1-dim array
@@ -64,22 +67,22 @@ func main() {
   dir, _ := filepath.Abs(".")
   dir = filepath.Join(dir, model)
   graph := filepath.Join(dir, "alexnet.pt")
-  features := filepath.Join(dir, "synset.txt")
+  synset := filepath.Join(dir, "synset.txt")
 
   if _, err := os.Stat(graph); os.IsNotExist(err) {
     if _, err := downloadmanager.DownloadInto(graph_url, dir); err != nil {
       panic(err)
     }
   }
-  if _, err := os.Stat(features); os.IsNotExist(err) {
-    if _, err := downloadmanager.DownloadInto(features_url, dir); err != nil {
+  if _, err := os.Stat(synset); os.IsNotExist(err) {
+    if _, err := downloadmanager.DownloadInto(synset_url, dir); err != nil {
       panic(err)
     }
   }
 
   // INFO
   pp.Println("Model + Weights url - ", graph_url)
-  pp.Println("Labels url - ", features_url)
+  pp.Println("Labels url - ", synset_url)
 
   imgDir, _ := filepath.Abs("./_fixtures")
   imagePath := filepath.Join(imgDir, "platypus.jpg")
@@ -132,30 +135,48 @@ func main() {
     panic(err)
   }
 
-  predictions := predictor.ReadPredictedFeatures(ctx)
+  output, err := predictor.ReadPredictionOutput(ctx)
+  if err != nil {
+    panic(err)
+  }
+
+  var labels []string
+  f, err := os.Open(synset)
+  if err != nil {
+      panic(err)
+  }
+  defer f.Close()
+  scanner := bufio.NewScanner(f)
+  for scanner.Scan() {
+    line := scanner.Text()
+    labels = append(labels, line)
+  }
+
+  features := make([]dlframework.Features, batchSize)
+  featuresLen := len(output) / batchSize
+
+  for ii := 0; ii < batchSize; ii++ {
+    rprobs := make([]*dlframework.Feature, featuresLen)
+    for jj := 0; jj < featuresLen; jj++ {
+      rprobs[jj] = feature.New(
+        feature.ClassificationIndex(int32(jj)),
+        feature.ClassificationLabel(labels[jj]),
+        feature.Probability(output[ii*featuresLen+jj]),
+      )
+    }
+    sort.Sort(dlframework.Features(rprobs))
+    features[ii] = rprobs
+  }
 
   if true {
-    var labels []string
-    f, err := os.Open(features)
-    if err != nil {
-      panic(err)
-    }
-    defer f.Close()
-    scanner := bufio.NewScanner(f)
-    for scanner.Scan() {
-      line := scanner.Text()
-      labels = append(labels, line)
-    }
-
-    len := len(predictions) / batchSize
     for i := 0; i < 1; i++ {
-      res := predictions[i*len : (i+1)*len]
-      res.Sort()
-      pp.Println(res[0].Probability)
-      pp.Println(labels[res[0].Index])
+      results := features[i]
+      top1 := results[0]
+      pp.Println(top1.Probability)
+      pp.Println(top1.GetClassification().GetLabel())
     }
   } else {
-    _ = predictions
+    _ = features
   }
 
   // INFO

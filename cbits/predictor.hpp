@@ -16,7 +16,7 @@ void SetModePytorch(int mode);
 
 void InitPytorch();
 
-void PredictPytorch(PredictorContext pred, float *imageData);
+void PredictPytorch(PredictorContext pred, float *inputData);
 
 const float *GetPredictionsPytorch(PredictorContext pred);
 
