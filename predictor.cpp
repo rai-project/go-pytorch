@@ -11,7 +11,6 @@
 #include <torch/torch.h>
 #include <torch/script.h>
 
-#include "json.hpp"
 #include "predictor.hpp"
 #include "timer.h"
 #include "timer.impl.hpp"
@@ -24,7 +23,6 @@
 
 using namespace torch;
 using std::string;
-using json = nlohmann::json;
 
 /* Pair (label, confidence) representing a prediction. */
 using Prediction = std::pair<int, float>;
