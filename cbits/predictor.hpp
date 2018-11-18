@@ -22,15 +22,6 @@ const float *GetPredictionsPytorch(PredictorContext pred);
 
 void DeletePytorch(PredictorContext pred);
 
-void StartProfilingPytorch(PredictorContext pred, const char *name,
-                         const char *metadata);
-
-void EndProfilingPytorch(PredictorContext pred);
-
-void DisableProfilingPytorch(PredictorContext pred);
-
-char *ReadProfilePytorch(PredictorContext pred);
-
 int GetWidthPytorch(PredictorContext pred);
 
 int GetHeightPytorch(PredictorContext pred);

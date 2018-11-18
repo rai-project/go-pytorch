@@ -159,58 +159,6 @@ void DeletePytorch(PredictorContext pred) {
   delete predictor;
 }
 
-void StartProfilingPytorch(PredictorContext pred, const char *name,
-                         const char *metadata) {
-  auto predictor = (Predictor *)pred;
-  if(predictor == nullptr) {
-    return;
-  }
-  if(name == nullptr) {
-    name = "";
-  }
-  if (metadata == nullptr) {
-    metadata = "";
-  }
-  if(predictor->prof_ == nullptr) {
-    predictor->prof_ = new profile(name, metadata);
-  } else {
-    predictor->prof_->reset();
-  }
-}
-
-void EndProfilingPytorch(PredictorContext pred) {
-  auto predictor = (Predictor *)pred;
-  if(predictor == nullptr) {
-    return;
-  }
-  if(predictor->prof_) {
-    predictor->prof_->end();
-  }
-}
-
-void DisableProfilingPytorch(PredictorContext pred) {
-  auto predictor = (Predictor *)pred;
-  if(predictor == nullptr) {
-    return;
-  }
-  if(predictor->prof_) {
-    predictor->prof_->reset();
-  }
-}
-
-char *ReadProfilePytorch(PredictorContext pred) {
-  auto predictor = (Predictor *)pred;
-  if (predictor == nullptr) {
-    return strdup("");
-  }
-  if (predictor->prof_ == nullptr) {
-    return strdup("");
-  }
-  const auto s = predictor->prof_->read();
-  const auto cstr = s.c_str();
-  return strdup(cstr);
-}
-
 int GetWidthPytorch(PredictorContext pred) {
   auto predictor = (Predictor *)pred;
   if (predictor == nullptr) {
