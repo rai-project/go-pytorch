@@ -1,0 +1,7 @@
+language: go
+dist: xenial
+sudo: required
+services:
+  - docker
+script:
+  - echo "to be added..."
