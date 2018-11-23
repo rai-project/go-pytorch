@@ -1,0 +1,22 @@
+
+jobs:
+- job: CPU
+  steps:
+  - bash: |
+     docker login -u $(DOCKER_PASSWORD) -p $(DOCKER_PASSWORD)
+     cd dockerfiles
+     make docker_build_cpu
+     make docker_push_cpu
+- job: GPU
+  steps:
+  - bash: |
+     docker login -u $(DOCKER_PASSWORD) -p $(DOCKER_PASSWORD)
+     cd dockerfiles
+     make docker_build_gpu
+     make docker_push_gpu
+- job: Update_Microbadger
+  dependsOn:
+  - CPU
+  - GPU
+  steps:
+  - script: 'curl -X POST https://hooks.microbadger.com/images/carml/go-pytorch/LhaNimlmXzse3g4UF1HZ1LfchSo='
