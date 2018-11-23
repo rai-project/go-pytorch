@@ -1,0 +1,42 @@
+FROM carml/base:amd64-gpu-latest
+MAINTAINER Abdul Dakkak <dakkak@illinois.edu>
+
+# Build-time metadata as defined at http://label-schema.org
+ARG BUILD_DATE
+ARG VCS_REF
+ARG VCS_URL
+ARG VERSION
+ARG ARCH
+ARG FRAMEWORK_VERSION
+LABEL org.carml.go-pytorch.build-date=$BUILD_DATE \
+  org.carml.go-pytorch.name="go-pytorch bindings for go" \
+  org.carml.go-pytorch.description="" \
+  org.carml.go-pytorch.url="https://www.carml.org/" \
+  org.carml.go-pytorch.vcs-ref=$VCS_REF \
+  org.carml.go-pytorch.vcs-url=$VCS_URL \
+  org.carml.go-pytorch.vendor="MLModelScope" \
+  org.carml.go-pytorch.arch=$ARCH \
+  org.carml.go-pytorch.version=$VERSION \
+  org.carml.go-pytorch.framework_version=$FRAMEWORK_VERSION \
+  org.carml.go-pytorch.schema-version="1.0"
+
+########## LIBRARY INSTALLATION ###################
+WORKDIR /opt
+
+RUN apt-get update && apt-get install -y sudo && rm -rf /var/lib/apt/lists/*
+
+RUN wget -q https://download.pytorch.org/libtorch/nightly/cu92/libtorch-shared-with-deps-latest.zip &&\
+	unzip libtorch-shared-with-deps-latest.zip && \
+  rm -f libtorch-shared-with-deps-latest.zip
+
+RUN echo "/opt/libtorch/lib" >> /etc/ld.so.conf.d/libtorch.conf && ldconfig
+ENV LD_LIBRARY_PATH /opt/libtorch/lib:${LD_LIBRARY_PATH}
+
+########## GO BINDING INSTALLATION ###################
+ENV PKG github.com/rai-project/go-pytorch
+WORKDIR $GOPATH/src/$PKG
+
+RUN git clone --depth=1 https://${PKG}.git . && \
+	dep ensure -v && \
+  go install -a -installsuffix cgo -ldflags "-s -w -X ${PKG}/Version=${VERSION} -X ${PKG}/GitCommit=${VCS_REF} -X ${PKG}/BuildDate=${BUILD_DATE}"&& \
+  rm -fr vendor
