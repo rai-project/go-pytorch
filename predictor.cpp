@@ -10,6 +10,7 @@
 
 #include <torch/torch.h>
 #include <torch/script.h>
+#include <ATen/core/DefaultTensorOptions.h>
 
 #include "predictor.hpp"
 #include "timer.h"
