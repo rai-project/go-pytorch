@@ -35,7 +35,8 @@ using Prediction = std::pair<int, float>;
 class Predictor {
   public:
     Predictor(const string &model_file, int batch, torch::DeviceType mode);
-    void Predict(float* inputData);
+    // void Predict(float* inputData);
+    void Predict(int64_t* inputData);
 
     std::shared_ptr<torch::jit::script::Module> net_;
     int width_, height_, channels_;
@@ -63,15 +64,17 @@ Predictor::Predictor(const string &model_file, int batch, torch::DeviceType mode
   //const torch::jit::script::NamedModule& temp = net_module_dict.get("fc1"); 
   //temp.module->get_method("fc1_script");  
 
-  width_ = 224;
-  height_ = 224;
-  channels_ = 3;
+  width_ = 3;
+  height_ = 1;
+  channels_ = 1;
   batch_ = batch;
 
   CHECK(channels_ == 3 || channels_ == 1) << "Input layer should have 1 or 3 channels.";
 
 }
 
+/*
+// Predict for Alexnet
 void Predictor::Predict(float* inputData) {
 
   std::vector<int64_t> sizes = {1, 3, width_, height_};
@@ -101,6 +104,48 @@ void Predictor::Predict(float* inputData) {
   result_ = result_.to(at::kCPU);
 
 }
+*/
+
+// changing Predict for NCF model
+void Predictor::Predict(int64_t* inputData) {
+
+  std::vector<int64_t> sizes = {1};
+  at::TensorOptions options(at::kLong);
+  at::Tensor tensor_inp0 = torch::from_blob(inputData, at::IntList(sizes), options);
+  at::Tensor tensor_inp1 = torch::from_blob(inputData+1, at::IntList(sizes), options);
+  at::Tensor tensor_inp2 = torch::from_blob(inputData+2, at::IntList(sizes), options);
+
+  std::vector<torch::jit::IValue> inputs;
+
+  // check if mode is set to GPU
+  if(mode_ == torch::kCUDA) {
+    // port model to GPU
+    net_->to(at::kCUDA);
+    // port input to GPU
+    at::Tensor tensor_inp0_cuda = tensor_inp0.to(at::kCUDA);
+    at::Tensor tensor_inp1_cuda = tensor_inp1.to(at::kCUDA);
+    at::Tensor tensor_inp2_cuda = tensor_inp2.to(at::kCUDA);
+    // emplace IValue input
+    inputs.emplace_back(tensor_inp0_cuda);
+    inputs.emplace_back(tensor_inp1_cuda);
+    inputs.emplace_back(tensor_inp2_cuda);
+    // execute model
+    result_ = net_->forward(inputs).toTensor();
+  }else {
+    // emplace IValue input
+    inputs.emplace_back(tensor_inp0);
+    inputs.emplace_back(tensor_inp1);
+    inputs.emplace_back(tensor_inp2);
+    // execute model
+    result_ = net_->forward(inputs).toTensor();
+  }
+  
+  // port output back to CPU
+  result_ = result_.to(at::kCPU);
+
+}
+
+
 
 PredictorContext NewPytorch(char *model_file, int batch,
                           int mode) {
@@ -129,6 +174,8 @@ void SetModePytorch(int mode) {
 
 void InitPytorch() {}
 
+/*
+// Predict for Alexnet
 void PredictPytorch(PredictorContext pred, float* inputData) {
   auto predictor = (Predictor *)pred;
   if (predictor == nullptr) {
@@ -137,6 +184,27 @@ void PredictPytorch(PredictorContext pred, float* inputData) {
   predictor->Predict(inputData);
   return;
 }
+*/
+
+// Predict for NCF
+/*
+ Assuming that the float* input data consists of three integers as float
+ which are item id, user id, and a boolean flag
+ converting float to int in order to match the predictor
+*/
+void PredictPytorch(PredictorContext pred, float* inputData) {
+  auto predictor = (Predictor *)pred;
+  if (predictor == nullptr) {
+    return;
+  }
+  int64_t* IntegerinputData = new int64_t[3];
+  IntegerinputData[0] = int64_t(inputData[0]);
+  IntegerinputData[1] = int64_t(inputData[1]);
+  IntegerinputData[2] = int64_t(inputData[2]);
+  predictor->Predict(IntegerinputData);
+  return;
+}
+
 
 const float*GetPredictionsPytorch(PredictorContext pred) {
   auto predictor = (Predictor *)pred;

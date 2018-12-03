@@ -10,7 +10,7 @@ import (
 	"unsafe"
 
 	"github.com/Unknwon/com"
-	"github.com/k0kubun/pp"
+	//"github.com/k0kubun/pp"
 	"github.com/pkg/errors"
 	"github.com/rai-project/dlframework/framework/options"
 	"github.com/rai-project/nvidia-smi"
@@ -114,7 +114,7 @@ func (p *Predictor) ReadPredictionOutput(ctx context.Context) ([]float32, error)
 	}
 
 	slice := (*[1 << 30]float32)(unsafe.Pointer(cPredictions))[:length:length]
-	pp.Println(slice[:2])
+	//pp.Println(slice[:2])
 
 	return slice, nil
 }
