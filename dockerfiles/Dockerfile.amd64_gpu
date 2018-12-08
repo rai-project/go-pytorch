@@ -27,7 +27,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   libboost-all-dev \
   libgtest-dev \
   libprotobuf-dev \
-  protobuf-compiler \
   libgflags-dev \
   libiomp-dev \
   libleveldb-dev \
@@ -70,7 +69,7 @@ RUN git clone --single-branch --depth=1 --recurse-submodules --branch=$FRAMEWORK
   -DUSE_OBSERVERS=ON \
   -DUSE_PROF=ON \
   -DBLAS=OpenBLAS \
-  -DBUILD_CUSTOM_PROTOBUF=OFF \
+  -DBUILD_CUSTOM_PROTOBUF=ON \
   -DBUILD_PYTHON=ON \
   -DUSE_NATIVE_ARCH=ON \
   -DUSE_NNPACK=ON \
