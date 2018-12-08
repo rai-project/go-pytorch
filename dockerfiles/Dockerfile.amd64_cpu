@@ -57,9 +57,10 @@ WORKDIR /opt
 RUN apt-get update && apt-get install -y sudo && rm -rf /var/lib/apt/lists/*
 
 # BINARY INSTALLATION
-#RUN wget -q https://download.pytorch.org/libtorch/nightly/cpu/libtorch-shared-with-deps-latest.zip &&\
-#	unzip libtorch-shared-with-deps-latest.zip && \
-#  rm -f libtorch-shared-with-deps-latest.zip
+RUN mkdir temp && \
+	wget -q https://download.pytorch.org/libtorch/nightly/cpu/libtorch-shared-with-deps-latest.zip &&\
+	unzip libtorch-shared-with-deps-latest.zip && \
+	rm -f libtorch-shared-with-deps-latest.zip
 
 # SOURCE INSTALLATION
 ENV PYTORCH_DIST_DIR /opt/libtorch
@@ -96,6 +97,10 @@ ENV LD_LIBRARY_PATH /opt/libtorch/lib:${LD_LIBRARY_PATH}
 
 #RUN echo "/opt/libtorch/lib" >> /etc/ld.so.conf.d/libtorch.conf && ldconfig
 #ENV LD_LIBRARY_PATH /opt/libtorch/lib:${LD_LIBRARY_PATH}
+
+RUN cp /opt/temp/libtorch/include/ATen/core/DefaultTensorOptions.h PYTORCH_DIST_DIR/include/ATen/core/
+ && \
+	ls -l PYTORCH_DIST_DIR/include/ATen/core
 
 ########## GO BINDING INSTALLATION ###################
 ENV PKG github.com/rai-project/go-pytorch
