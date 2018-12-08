@@ -20,17 +20,79 @@ LABEL org.carml.go-pytorch.build-date=$BUILD_DATE \
   org.carml.go-pytorch.framework_version=$FRAMEWORK_VERSION \
   org.carml.go-pytorch.schema-version="1.0"
 
+########## DEPENDENCIES INSTALLATION ###################
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  libgoogle-glog-dev \
+  libboost-all-dev \
+  libgtest-dev \
+  libprotobuf-dev \
+  protobuf-compiler \
+  libgflags-dev \
+  libiomp-dev \
+  libleveldb-dev \
+  liblmdb-dev \
+  libopencv-dev \
+  libopenmpi-dev \
+  libsnappy-dev \
+  openmpi-bin \
+  openmpi-doc \
+  libeigen3-dev \
+  python-dev \
+  python-pip \
+  python-setuptools \
+  python-yaml \
+  tzdata && \
+  rm -rf /var/lib/apt/lists/*
+
+RUN pip install --no-cache-dir numpy &&\
+  pip install --no-cache-dir typing
+
+RUN ln -fs /usr/share/zoneinfo/America/Chicago /etc/localtime && \
+  dpkg-reconfigure --frontend noninteractive tzdata
+
 ########## LIBRARY INSTALLATION ###################
 WORKDIR /opt
 
 RUN apt-get update && apt-get install -y sudo && rm -rf /var/lib/apt/lists/*
 
-RUN wget -q https://download.pytorch.org/libtorch/nightly/cu92/libtorch-shared-with-deps-latest.zip &&\
-	unzip libtorch-shared-with-deps-latest.zip && \
-  rm -f libtorch-shared-with-deps-latest.zip
 
-RUN echo "/opt/libtorch/lib" >> /etc/ld.so.conf.d/libtorch.conf && ldconfig
+# SOURCE INSTALLATION
+ENV PYTORCH_DIST_DIR /opt/libtorch
+
+RUN git clone --single-branch --depth=1 --recurse-submodules --branch=$FRAMEWORK_VERSION https://github.com/pytorch/pytorch.git && cd pytorch && \
+  git submodule update --init && \
+  mkdir build && cd build && \
+  cmake .. \
+  -DCMAKE_INSTALL_PREFIX=$PYTORCH_DIST_DIR \
+  -DBUILD_TORCH=ON \
+  -DBUILD_SHARED_LIBS=ON \
+  -DUSE_OBSERVERS=ON \
+  -DUSE_PROF=ON \
+  -DBLAS=OpenBLAS \
+  -DBUILD_CUSTOM_PROTOBUF=OFF \
+  -DBUILD_PYTHON=ON \
+  -DUSE_NATIVE_ARCH=ON \
+  -DUSE_NNPACK=ON \
+  -DUSE_OPENCV=OFF \
+  -DUSE_MKL=OFF \
+  -DUSE_DISTRIBUTED=OFF \
+  -DUSE_ROCKSDB=OFF \
+  -DUSE_GLOO=OFF \
+  -DUSE_NCCL=OFF \
+  -DUSE_CUDA=OFF \
+  && make -j$(nproc) install \
+  && ldconfig \
+  && make clean \
+  && cd .. \
+  && rm -rf build
+
+RUN echo "$PYTORCH_DIST_DIR/lib" >> /etc/ld.so.conf.d/libtorch.conf && ldconfig
 ENV LD_LIBRARY_PATH /opt/libtorch/lib:${LD_LIBRARY_PATH}
+
+
+#RUN echo "/opt/libtorch/lib" >> /etc/ld.so.conf.d/libtorch.conf && ldconfig
+#ENV LD_LIBRARY_PATH /opt/libtorch/lib:${LD_LIBRARY_PATH}
 
 ########## GO BINDING INSTALLATION ###################
 ENV PKG github.com/rai-project/go-pytorch
