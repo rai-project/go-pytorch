@@ -27,6 +27,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   libboost-all-dev \
   libgtest-dev \
   libprotobuf-dev \
+  protobuf-compiler \
   libgflags-dev \
   libiomp-dev \
   libleveldb-dev \
@@ -69,7 +70,7 @@ RUN git clone --single-branch --depth=1 --recurse-submodules --branch=$FRAMEWORK
   -DUSE_OBSERVERS=ON \
   -DUSE_PROF=ON \
   -DBLAS=OpenBLAS \
-  -DBUILD_CUSTOM_PROTOBUF=ON \
+  -DBUILD_CUSTOM_PROTOBUF=OFF \
   -DBUILD_PYTHON=ON \
   -DUSE_NATIVE_ARCH=ON \
   -DUSE_NNPACK=ON \
@@ -79,8 +80,12 @@ RUN git clone --single-branch --depth=1 --recurse-submodules --branch=$FRAMEWORK
   -DUSE_ROCKSDB=OFF \
   -DUSE_GLOO=OFF \
   -DUSE_NCCL=OFF \
-  -DUSE_CUDA=OFF \
-  && make -j$(nproc) install \
+  -DUSE_CUDA=ON \
+  -DUSE_CUDNN=ON \
+  -DCUDA_ARCH_NAME=Manual \
+  -DTORCH_CUDA_ARCH_LIST="3.0 3.5 3.7 5.0 5.2 5.3 6.0 6.1+PTX 7.0+PTX 7.5+PTX" \
+  -DPYTORCH_CUDA_ARCH_LIST="3.0 3.5 3.7 5.0 5.2 5.3 6.0 6.1+PTX 7.0+PTX 7.5+PTX" \
+  && make install \
   && ldconfig \
   && make clean \
   && cd .. \
@@ -98,6 +103,6 @@ ENV PKG github.com/rai-project/go-pytorch
 WORKDIR $GOPATH/src/$PKG
 
 RUN git clone --depth=1 https://${PKG}.git . && \
-	dep ensure -v && \
+  dep ensure -vendor-only && \
   go install -a -installsuffix cgo -ldflags "-s -w -X ${PKG}/Version=${VERSION} -X ${PKG}/GitCommit=${VCS_REF} -X ${PKG}/BuildDate=${BUILD_DATE}"&& \
   rm -fr vendor
