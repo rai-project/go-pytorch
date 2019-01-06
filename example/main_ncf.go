@@ -38,7 +38,8 @@ func main() {
 
 	dir, _ := filepath.Abs(".")
 	dir = filepath.Join(dir, model)
-	graph := filepath.Join(dir, "ncf_2epoch.pt")
+	//graph := filepath.Join(dir, "ncf_2epoch.pt")
+	graph := filepath.Join(dir, "ncf_mlperf_ss.pt")
 	// synset := filepath.Join(dir, "synset.txt")
 
 	opts := options.New()
