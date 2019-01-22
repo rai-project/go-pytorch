@@ -82,11 +82,13 @@ void Predictor::AddInput(int index, T *inputData, int *sizes, int sizeLen) {
   std::vector<int> shape(sizeLen, sizes);
   shapes_.emplace_back(shape);
 
-  at::TensorOptions options;
-#define SET_TYPE(ty, top, _) \
-  if (std::is_same<T, ty>::value) options = at::ty;
-  AT_FORALL_SCALAR_TYPES(SET_TYPE);
-#undef SET_TYPE
+  //   at::TensorOptions options;
+  // #define SET_TYPE(ty, top, _) \
+//   if (std::is_same<T, ty>::value) options = at::ty;
+  //   AT_FORALL_SCALAR_TYPES(SET_TYPE);
+  // #undef SET_TYPE
+
+  auto options = at::dtype<T>();
 
   at::Tensor tensor_image =
       torch::from_blob(inputData, at::IntList(shape), options);
