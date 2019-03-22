@@ -70,7 +70,7 @@ RUN git clone --single-branch --depth=1 --recurse-submodules --branch=$FRAMEWORK
   -DUSE_OBSERVERS=ON \
   -DUSE_PROF=ON \
   -DBLAS=OpenBLAS \
-  -DBUILD_CUSTOM_PROTOBUF=OFF \
+  -DBUILD_CUSTOM_PROTOBUF=ON \
   -DBUILD_PYTHON=ON \
   -DUSE_NATIVE_ARCH=ON \
   -DUSE_NNPACK=ON \
@@ -88,7 +88,7 @@ RUN git clone --single-branch --depth=1 --recurse-submodules --branch=$FRAMEWORK
   && rm -rf build
   
 RUN echo "$PYTORCH_DIST_DIR/lib" >> /etc/ld.so.conf.d/libtorch.conf && ldconfig
-ENV LD_LIBRARY_PATH /opt/libtorch/lib:${LD_LIBRARY_PATH
+ENV LD_LIBRARY_PATH /opt/libtorch/lib:${LD_LIBRARY_PATH}
 
 #RUN cp /opt/temp/libtorch/include/ATen/core/DefaultTensorOptions.h PYTORCH_DIST_DIR/include/ATen/core/ && \
 #	ls -l PYTORCH_DIST_DIR/include/ATen/core
