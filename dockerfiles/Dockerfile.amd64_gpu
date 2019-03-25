@@ -91,12 +91,15 @@ RUN git clone --single-branch --depth=1 --recurse-submodules --branch=$FRAMEWORK
   && cd .. \
   && rm -rf build
 
+### Built-in method to build custom libtorch
+#RUN git clone --single-branch --depth=1 --recurse-submodules --branch=$FRAMEWORK_VERSION  https://github.com/pytorch/pytorch.git && cd pytorch && \
+#  git submodule update --init && \
+#  cd tools && \
+#  ls -l && \
+#  python build_libtorch.py
+
 RUN echo "$PYTORCH_DIST_DIR/lib" >> /etc/ld.so.conf.d/libtorch.conf && ldconfig
 ENV LD_LIBRARY_PATH /opt/libtorch/lib:${LD_LIBRARY_PATH}
-
-
-#RUN echo "/opt/libtorch/lib" >> /etc/ld.so.conf.d/libtorch.conf && ldconfig
-#ENV LD_LIBRARY_PATH /opt/libtorch/lib:${LD_LIBRARY_PATH}
 
 ########## GO BINDING INSTALLATION ###################
 ENV PKG github.com/rai-project/go-pytorch
