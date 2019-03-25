@@ -1,4 +1,5 @@
-//#define _GLIBCXX_USE_CXX11_ABI 0
+// TODO need to add a check - if in docker, comment it
+#define _GLIBCXX_USE_CXX11_ABI 0
 
 #include <algorithm>
 #include <iosfwd>
@@ -10,7 +11,7 @@
 
 #include <torch/torch.h>
 #include <torch/script.h>
-//#include <ATen/core/DefaultTensorOptions.h>
+#include <../../autograd/profiler.h>
 
 #include "predictor.hpp"
 #include "timer.h"
@@ -28,10 +29,41 @@ using std::string;
 /* Pair (label, confidence) representing a prediction. */
 using Prediction = std::pair<int, float>;
 
-/*
-  Predictor class takes in one module file (exported using torch JIT compiler)
-  , batch size and device mode for inference
-*/
+class StartProfile {
+  public:
+    explicit StartProfile(profile *prof, const std::shared_ptr<torch::jit::script::Module> &net) : prof_(prof), net_(net) {}
+    virtual ~StartProfile() {}
+
+  protected:
+    virtual void run() final {
+    if(prof_ == nullptr || net_ == nullptr) {
+      return;
+    }
+    //TODO  start autograd profiler
+    }
+
+  private:
+    profile *prof_{nullptr};
+    const shared_ptr<torch::jit::script::Module> net_{nullptr};
+};
+
+class EndProfile {
+  public:
+    explicit EndProfile(profile *prof) : prof_(prof) {}
+    virtual ~EndProfile() {}
+
+  protected:
+    virtual void run() final {
+    if(prof_ == nullptr) {
+      return;
+    }
+    // TODO end autograd profiler
+    }
+	
+  private:
+    profile *prof_{nullptr};
+};
+
 class Predictor {
   public:
     Predictor(const string &model_file, int batch, torch::DeviceType mode);
@@ -54,8 +86,8 @@ Predictor::Predictor(const string &model_file, int batch, torch::DeviceType mode
   assert(net_ != nullptr);
   mode_ = mode;
 
-  // Input shape hard coded for now due to lack of layer shape accessor API
-  // Preferred alternate: pass input layer shape as an input 
+  // Input shape hard coded for now due to absence of layer shape through API
+  // TODO Preferred alternative: pass input layer shape as an input 
   width_ = 224;
   height_ = 224;
   channels_ = 3;
@@ -70,6 +102,14 @@ void Predictor::Predict(float* inputData) {
   std::vector<int64_t> sizes = {1, 3, width_, height_};
   at::TensorOptions options(at::kFloat);
   at::Tensor tensor_image = torch::from_blob(inputData, at::IntList(sizes), options);
+
+  StartProfile *start_profile = nullptr;
+  EndProfile *end_profile = nullptr;
+  if(prof_ != nullptr && profile_enabled_ == false) {
+    start_profile = new StartProfile(prof_, net_);
+    end_profile = new EndProfile(prof_);
+    profile_enabled_ = true;
+  }
 
   std::vector<torch::jit::IValue> inputs;
   if(mode_ == torch::kCUDA) {
@@ -184,3 +224,56 @@ int GetPredLenPytorch(PredictorContext pred) {
 
 }
 
+void StartProfilingPytorch(PredictorContext pred, const char *name, const char *metadata) {
+  auto predictor = (Predictor *)pred;
+  if (predictor == nullptr) {
+    return;
+  }
+  if (name == nullptr) {
+    name = "";
+  }
+  if (metadata == nullptr) {
+    metadata = "";
+  }
+  if (predictor->prof_ == nullptr) {
+    predictor->prof_ = new profile(name, metadata);
+  } else {
+    predictor->prof_->reset();
+  }
+
+}
+
+void EndProfilingPytorch(PredictorContext pred) {
+  auto predictor = (Predictor *)pred;
+  if (predictor == nullptr) {
+    return;
+  }
+  if (predictor->prof_) {
+    predictor->prof_->end();
+  }
+}
+
+void DisableProfilingPytorch(PredictorContext pred) {
+  auto predictor = (Predictor *)pred;
+  if (predictor == nullptr) {
+    return;
+  }
+  if (predictor->prof_) {
+    predictor->prof_->reset();
+  }
+
+}
+
+char *ReadProfilePyTorch(PredictorContext pred) {
+  auto predictor = (Predictor * pred);
+  if (predictor == nullptr) {
+    return strdup("");
+  }
+  if (predictor->prof_ == nullptr) {
+    return strdup("");
+  }
+  const auto s = predictor->prof_->read();
+  const auto cstr = s.c_str();
+  return strdup(cstr);
+
+}
