@@ -70,20 +70,22 @@ func init() {
 	C.InitPytorch()
 }
 
-func (p *Predictor) Predict(ctx context.Context, data []float32) error {
+func (p *Predictor) Predict(ctx context.Context, data []float32, dims []int) error {
 
 	if data == nil || len(data) < 1 {
 		return fmt.Errorf("input nil or empty")
 	}
 
 	batchSize := p.options.BatchSize()
-	width := C.GetWidthPytorch(p.ctx)
-	height := C.GetHeightPytorch(p.ctx)
-	channels := C.GetChannelsPytorch(p.ctx)
-	shapeLen := int(width * height * channels)
 
-	dataLen := len(data)
+	// dims = [len(gotensors), Shape[0] == channels, Shape[1] == height, Shape[2] == width]
+	dataLen := dims[0]
+	channels := dims[1]
+	height := dims[2]
+	width := dims[3]
+	C.SetDimensionsPytorch(p.ctx, C.int(channels), C.int(height), C.int(width), C.int(batchSize))
 
+	shapeLen := int(channels * width * height)
 	inputCount := dataLen / shapeLen
 	if batchSize > inputCount {
 		padding := make([]float32, (batchSize-inputCount)*shapeLen)

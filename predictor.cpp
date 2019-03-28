@@ -44,7 +44,7 @@ class StartProfile {
 
   private:
     profile *prof_{nullptr};
-    const shared_ptr<torch::jit::script::Module> net_{nullptr};
+    std::shared_ptr<torch::jit::script::Module> net_{nullptr};
 };
 
 class EndProfile {
@@ -85,21 +85,13 @@ Predictor::Predictor(const string &model_file, int batch, torch::DeviceType mode
   net_ = torch::jit::load(model_file);
   assert(net_ != nullptr);
   mode_ = mode;
-
-  // Input shape hard coded for now due to absence of layer shape through API
-  // TODO Preferred alternative: pass input layer shape as an input 
-  width_ = 224;
-  height_ = 224;
-  channels_ = 3;
   batch_ = batch;
-
-  CHECK(channels_ == 3 || channels_ == 1) << "Input layer should have 1 or 3 channels.";
 
 }
 
 void Predictor::Predict(float* inputData) {
 
-  std::vector<int64_t> sizes = {1, 3, width_, height_};
+  std::vector<int64_t> sizes = {batch_, channels_, width_, height_};
   at::TensorOptions options(at::kFloat);
   at::Tensor tensor_image = torch::from_blob(inputData, at::IntList(sizes), options);
 
@@ -213,6 +205,19 @@ int GetChannelsPytorch(PredictorContext pred) {
 
 }
 
+void SetDimensionsPytorch(PredictorContext pred, int channels, int height, int width, int batch) {
+
+	auto predictor = (Predictor *)pred;
+	if(predictor == nullptr) {
+		return;
+	}
+	predictor->channels_ = channels;
+	predictor->height_ = height;
+	predictor->width_ = width;
+	predictor->batch_ = batch;
+
+}
+
 int GetPredLenPytorch(PredictorContext pred) {
 
   auto predictor = (Predictor *)pred;
@@ -264,8 +269,8 @@ void DisableProfilingPytorch(PredictorContext pred) {
 
 }
 
-char *ReadProfilePyTorch(PredictorContext pred) {
-  auto predictor = (Predictor * pred);
+char *ReadProfilePytorch(PredictorContext pred) {
+  auto predictor = (Predictor *)pred;
   if (predictor == nullptr) {
     return strdup("");
   }

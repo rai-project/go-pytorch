@@ -28,7 +28,17 @@ int GetHeightPytorch(PredictorContext pred);
 
 int GetChannelsPytorch(PredictorContext pred);
 
+void SetDimensionsPytorch(PredictorContext pred, int channels, int height, int width, int batch);
+
 int GetPredLenPytorch(PredictorContext pred);
+
+void StartProfilingPytorch(PredictorContext pred, const char *name, const char *metadata);
+
+void EndProfilingPytorch(PredictorContext pred);
+
+void DisableProfilingPytorch(PredictorContext pred);
+
+char *ReadProfilePytorch(PredictorContext pred);
 
 #ifdef __cplusplus
 }
