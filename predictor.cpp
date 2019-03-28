@@ -65,6 +65,18 @@ Predictor::Predictor(const string &model_file, int batch,
   net_ = torch::jit::load(model_file);
   assert(net_ != nullptr);
   mode_ = mode;
+<<<<<<< HEAD
+=======
+
+  // TODO should fetch width and height from model
+  // const torch::detail::OrderedDict<std::string,
+  // torch::jit::script::NamedModule>& net_module_dict = net_->get_modules();
+  // size_t net_module_dict_size = net_module_dict.size();
+  // CHECK((int)net_module_dict_size == 1) << "Number of modules - " <<
+  // (int)net_module_dict_size; const torch::jit::script::NamedModule& temp =
+  // net_module_dict.get("fc1"); temp.module->get_method("fc1_script");
+
+>>>>>>> 5ad0e8d281ea0505ca3a785494928b3f8b73e6a8
   batch_ = batch;
 }
 
