@@ -24,7 +24,7 @@ import (
 	nvidiasmi "github.com/rai-project/nvidia-smi"
 	"github.com/rai-project/tracer"
 	_ "github.com/rai-project/tracer/all"
-	"github.com/rai-project/tracer/ctimer"
+	//"github.com/rai-project/tracer/ctimer"
 )
 
 var (
@@ -163,11 +163,11 @@ func main() {
 	// INFO
 	pp.Println("Profiler output - ", profBuffer)
 
-	t, err := ctimer.New(profBuffer)
-	if err != nil {
-		panic(err)
-	}
-	t.Publish(ctx, tracer.APPLICATION_TRACE)
+	//t, err := ctimer.New(profBuffer)
+	//if err != nil {
+	//	panic(err)
+	//}
+	//t.Publish(ctx, tracer.APPLICATION_TRACE)
 
 	output, err := predictor.ReadPredictionOutput(ctx)
 	if err != nil {
