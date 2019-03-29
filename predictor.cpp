@@ -39,7 +39,7 @@ class StartProfile {
     if(prof_ == nullptr || net_ == nullptr) {
       return;
     }
-    //TODO  start autograd profiler
+    // Doing nothing as of now
     }
 
   private:
@@ -57,7 +57,7 @@ class EndProfile {
     if(prof_ == nullptr) {
       return;
     }
-    // TODO end autograd profiler
+    // Doing nothing as of now
     }
 	
   private:
@@ -75,6 +75,7 @@ class Predictor {
     int pred_len_;
     torch::DeviceType mode_{torch::kCPU};
     profile *prof_{nullptr};
+    std::stringstream ss_;
     bool profile_enabled_{false};
     at::Tensor result_;
 };
@@ -95,23 +96,27 @@ void Predictor::Predict(float* inputData) {
   at::TensorOptions options(at::kFloat);
   at::Tensor tensor_image = torch::from_blob(inputData, at::IntList(sizes), options);
 
-  StartProfile *start_profile = nullptr;
-  EndProfile *end_profile = nullptr;
-  if(prof_ != nullptr && profile_enabled_ == false) {
-    start_profile = new StartProfile(prof_, net_);
-    end_profile = new EndProfile(prof_);
-    profile_enabled_ = true;
-  }
-
   std::vector<torch::jit::IValue> inputs;
   if(mode_ == torch::kCUDA) {
     net_->to(at::kCUDA);
     at::Tensor tensor_image_cuda = tensor_image.to(at::kCUDA);
     inputs.emplace_back(tensor_image_cuda);
-    result_ = net_->forward(inputs).toTensor();
+    if (profile_enabled_)
+    {
+      autograd::profiler::RecordProfile guard(ss_);
+      result_ = net_->forward(inputs).toTensor();
+    } else {
+      result_ = net_->forward(inputs).toTensor();
+    }
   }else {
     inputs.emplace_back(tensor_image);
-    result_ = net_->forward(inputs).toTensor();
+    if (profile_enabled_)
+    {
+      autograd::profiler::RecordProfile guard(ss_);
+      result_ = net_->forward(inputs).toTensor();
+    } else {
+      result_ = net_->forward(inputs).toTensor();
+    }
   }
   result_ = result_.to(at::kCPU);
 
@@ -207,14 +212,14 @@ int GetChannelsPytorch(PredictorContext pred) {
 
 void SetDimensionsPytorch(PredictorContext pred, int channels, int height, int width, int batch) {
 
-	auto predictor = (Predictor *)pred;
-	if(predictor == nullptr) {
-		return;
-	}
-	predictor->channels_ = channels;
-	predictor->height_ = height;
-	predictor->width_ = width;
-	predictor->batch_ = batch;
+  auto predictor = (Predictor *)pred;
+  if(predictor == nullptr) {
+    return;
+  }
+  predictor->channels_ = channels;
+  predictor->height_ = height;
+  predictor->width_ = width;
+  predictor->batch_ = batch;
 
 }
 
@@ -258,6 +263,15 @@ void EndProfilingPytorch(PredictorContext pred) {
   }
 }
 
+void EnableProfilingPytorch(PredictorContext pred) {
+  auto predictor = (Predictor *)pred;
+  if (predictor == nullptr) {
+    return;
+  }
+  predictor->profile_enabled_ = true;
+
+}
+
 void DisableProfilingPytorch(PredictorContext pred) {
   auto predictor = (Predictor *)pred;
   if (predictor == nullptr) {
@@ -266,19 +280,23 @@ void DisableProfilingPytorch(PredictorContext pred) {
   if (predictor->prof_) {
     predictor->prof_->reset();
   }
+  predictor->profile_enabled_ = false;
 
 }
 
 char *ReadProfilePytorch(PredictorContext pred) {
-  auto predictor = (Predictor *)pred;
-  if (predictor == nullptr) {
-    return strdup("");
+  try {  
+    auto predictor = (Predictor *)pred;
+    if (predictor == nullptr) {
+      return strdup("");
+    }
+    if (predictor->prof_ == nullptr) {
+      return strdup("");
+    }
+    const auto prof_output = predictor->ss_.str().c_str();
+    return strdup(prof_output);
+  } catch (std::exception &ex) {
+    LOG(ERROR) << "exception: catch all [ " << ex.what() << "]" << "\n";
+    return nullptr;
   }
-  if (predictor->prof_ == nullptr) {
-    return strdup("");
-  }
-  const auto s = predictor->prof_->read();
-  const auto cstr = s.c_str();
-  return strdup(cstr);
-
 }

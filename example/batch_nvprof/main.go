@@ -1,5 +1,10 @@
 package main
 
+// #cgo linux CFLAGS: -I/usr/local/cuda/include
+// #cgo linux LDFLAGS: -lcuda -lcudart -L/usr/local/cuda/lib64
+// #include <cuda.h>
+// #include <cuda_runtime.h>
+// #include <cuda_profiler_api.h>
 import "C"
 
 import (
@@ -26,7 +31,7 @@ import (
 )
 
 var (
-	batchSize  = 1
+	batchSize  = 64
 	model      = "alexnet"
 	graph_url  = "https://s3.amazonaws.com/store.carml.org/models/pytorch/alexnet.pt"
 	synset_url = "http://data.dmlc.ml/mxnet/models/imagenet/synset.txt"
@@ -98,6 +103,8 @@ func main() {
 		input = append(input, res...)
 	}
 
+  dims := append([]int{len(input)}, 3, 224, 224)
+
 	opts := options.New()
 
 	device := options.CPU_DEVICE
@@ -124,10 +131,20 @@ func main() {
 	}
 	defer predictor.Close()
 
-	err = predictor.Predict(ctx, input)
+	err = predictor.Predict(ctx, input, dims)
 	if err != nil {
 		panic(err)
 	}
+
+  C.cudaProfilerStart()
+
+  err = predictor.Predict(ctx, input, dims)
+  if err != nil {
+    panic(err)
+  }
+
+  C.cudaDeviceSynchronize()
+  C.cudaProfilerStop()
 
 	output, err := predictor.ReadPredictionOutput(ctx)
 	if err != nil {

@@ -36,6 +36,8 @@ void StartProfilingPytorch(PredictorContext pred, const char *name, const char *
 
 void EndProfilingPytorch(PredictorContext pred);
 
+void EnableProfilingPytorch(PredictorContext pred);
+
 void DisableProfilingPytorch(PredictorContext pred);
 
 char *ReadProfilePytorch(PredictorContext pred);

@@ -140,6 +140,11 @@ func (p *Predictor) EndProfiling() error {
 	return nil
 }
 
+func (p *Predictor) EnableProfiling() error {
+  C.EnableProfilingPytorch(p.ctx)
+  return nil
+}
+
 func (p *Predictor) DisableProfiling() error {
 	C.DisableProfilingPytorch(p.ctx)
 	return nil
