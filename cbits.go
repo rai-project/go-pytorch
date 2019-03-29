@@ -141,8 +141,8 @@ func (p *Predictor) EndProfiling() error {
 }
 
 func (p *Predictor) EnableProfiling() error {
-  C.EnableProfilingPytorch(p.ctx)
-  return nil
+	C.EnableProfilingPytorch(p.ctx)
+	return nil
 }
 
 func (p *Predictor) DisableProfiling() error {

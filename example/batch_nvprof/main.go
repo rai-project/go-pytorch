@@ -103,7 +103,7 @@ func main() {
 		input = append(input, res...)
 	}
 
-  dims := append([]int{len(input)}, 3, 224, 224)
+	dims := append([]int{len(input)}, 3, 224, 224)
 
 	opts := options.New()
 
@@ -136,15 +136,15 @@ func main() {
 		panic(err)
 	}
 
-  C.cudaProfilerStart()
+	C.cudaProfilerStart()
 
-  err = predictor.Predict(ctx, input, dims)
-  if err != nil {
-    panic(err)
-  }
+	err = predictor.Predict(ctx, input, dims)
+	if err != nil {
+		panic(err)
+	}
 
-  C.cudaDeviceSynchronize()
-  C.cudaProfilerStop()
+	C.cudaDeviceSynchronize()
+	C.cudaProfilerStop()
 
 	output, err := predictor.ReadPredictionOutput(ctx)
 	if err != nil {

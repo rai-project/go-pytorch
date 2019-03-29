@@ -20,11 +20,11 @@ import (
 	"github.com/rai-project/dlframework/framework/options"
 	"github.com/rai-project/downloadmanager"
 	"github.com/rai-project/go-pytorch"
-  //cupti "github.com/rai-project/go-cupti"
+	//cupti "github.com/rai-project/go-cupti"
 	nvidiasmi "github.com/rai-project/nvidia-smi"
 	"github.com/rai-project/tracer"
 	_ "github.com/rai-project/tracer/all"
-  "github.com/rai-project/tracer/ctimer"
+	"github.com/rai-project/tracer/ctimer"
 )
 
 var (
@@ -100,7 +100,7 @@ func main() {
 		input = append(input, res...)
 	}
 
-  dims := append([]int{len(input)}, 3, 224, 224)
+	dims := append([]int{len(input)}, 3, 224, 224)
 
 	opts := options.New()
 
@@ -128,46 +128,46 @@ func main() {
 	}
 	defer predictor.Close()
 
-  //enableCupti := true
+	//enableCupti := true
 
-  //var cu *cupti.CUPTI
-  //if enableCupti && nvidiasmi.HasGPU {
-  //  cu, err = cupti.New(cupti.Context(ctx))
-  //  if err != nil {
-  //    panic(err)
-  //  }
-  //}
+	//var cu *cupti.CUPTI
+	//if enableCupti && nvidiasmi.HasGPU {
+	//  cu, err = cupti.New(cupti.Context(ctx))
+	//  if err != nil {
+	//    panic(err)
+	//  }
+	//}
 
-  predictor.EnableProfiling()
+	predictor.EnableProfiling()
 
-  predictor.StartProfiling("predict", "")
+	predictor.StartProfiling("predict", "")
 
 	err = predictor.Predict(ctx, input, dims)
 	if err != nil {
 		panic(err)
 	}
 
-  predictor.EndProfiling()
+	predictor.EndProfiling()
 
-  //if enableCupti && nvidiasmi.HasGPU {
-  //  cu.Wait()
-  //  cu.Close()
-  //}
+	//if enableCupti && nvidiasmi.HasGPU {
+	//  cu.Wait()
+	//  cu.Close()
+	//}
 
-  profBuffer, err := predictor.ReadProfile()
-  if err != nil {
-    panic(err)
-  }
-  predictor.DisableProfiling()
+	profBuffer, err := predictor.ReadProfile()
+	if err != nil {
+		panic(err)
+	}
+	predictor.DisableProfiling()
 
-  // INFO
-  pp.Println("Profiler output - ", profBuffer)
+	// INFO
+	pp.Println("Profiler output - ", profBuffer)
 
-  t, err := ctimer.New(profBuffer)
-  if err != nil {
-    panic(err)
-  }
-  t.Publish(ctx, tracer.APPLICATION_TRACE)
+	t, err := ctimer.New(profBuffer)
+	if err != nil {
+		panic(err)
+	}
+	t.Publish(ctx, tracer.APPLICATION_TRACE)
 
 	output, err := predictor.ReadPredictionOutput(ctx)
 	if err != nil {
