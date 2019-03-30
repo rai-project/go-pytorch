@@ -78,11 +78,11 @@ func (p *Predictor) Predict(ctx context.Context, data []float32, dims []int) err
 
 	batchSize := p.options.BatchSize()
 
-	// dims = [len(gotensors), Shape[0] == channels, Shape[1] == height, Shape[2] == width]
+	// dims = [len(gotensors), Shape[0] == height, Shape[1] == width, Shape[2] == channels]
 	dataLen := dims[0]
-	channels := dims[1]
-	height := dims[2]
-	width := dims[3]
+	height := dims[1]
+	width := dims[2]
+	channels := dims[3]
 	C.SetDimensionsPytorch(p.ctx, C.int(channels), C.int(height), C.int(width), C.int(batchSize))
 
 	shapeLen := int(channels * width * height)

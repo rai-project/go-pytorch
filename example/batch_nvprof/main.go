@@ -103,7 +103,7 @@ func main() {
 		input = append(input, res...)
 	}
 
-	dims := append([]int{len(input)}, 3, 224, 224)
+	dims := append([]int{len(input)}, 224, 224, 3)
 
 	opts := options.New()
 
