@@ -36,10 +36,9 @@ class StartProfile {
 
   protected:
     virtual void run() final {
-    if(prof_ == nullptr || net_ == nullptr) {
-      return;
-    }
-    // Doing nothing as of now
+      if(prof_ == nullptr || net_ == nullptr) {
+        return;
+      }
     }
 
   private:
@@ -54,10 +53,10 @@ class EndProfile {
 
   protected:
     virtual void run() final {
-    if(prof_ == nullptr) {
-      return;
-    }
-    // Doing nothing as of now
+      if(prof_ == nullptr) {
+        return;
+      }
+
     }
 	
   private:
@@ -76,6 +75,7 @@ class Predictor {
     torch::DeviceType mode_{torch::kCPU};
     profile *prof_{nullptr};
     std::stringstream ss_;
+    std::string filename{"profile.trace"};
     bool profile_enabled_{false};
     at::Tensor result_;
 };
@@ -101,19 +101,23 @@ void Predictor::Predict(float* inputData) {
     net_->to(at::kCUDA);
     at::Tensor tensor_image_cuda = tensor_image.to(at::kCUDA);
     inputs.emplace_back(tensor_image_cuda);
-    if (profile_enabled_)
-    {
-      autograd::profiler::RecordProfile guard(ss_);
-      result_ = net_->forward(inputs).toTensor();
+    if (profile_enabled_) {
+      {
+        //autograd::profiler::enableProfiler(autograd::profiler::ProfilerState::CUDA);
+        autograd::profiler::RecordProfile guard(filename);
+        result_ = net_->forward(inputs).toTensor();
+      }
     } else {
       result_ = net_->forward(inputs).toTensor();
     }
   }else {
     inputs.emplace_back(tensor_image);
-    if (profile_enabled_)
-    {
-      autograd::profiler::RecordProfile guard(ss_);
-      result_ = net_->forward(inputs).toTensor();
+    if (profile_enabled_) {
+      {
+        //autograd::profiler::enableProfiler(autograd::profiler::ProfilerState::CPU);
+        autograd::profiler::RecordProfile guard(filename);
+        result_ = net_->forward(inputs).toTensor();
+      }
     } else {
       result_ = net_->forward(inputs).toTensor();
     }
@@ -125,8 +129,8 @@ void Predictor::Predict(float* inputData) {
 PredictorContext NewPytorch(char *model_file, int batch, int mode) {
   
   try {
-    torch::DeviceType mode_temp{at::kCPU};
-    if (mode == 1) mode_temp = at::kCUDA;
+    torch::DeviceType mode_temp{torch::kCPU};
+    if (mode == 1) mode_temp = torch::kCUDA;
     const auto ctx = new Predictor(model_file, batch, (torch::DeviceType)mode_temp);
     return (void *)ctx;
   } catch (const std::invalid_argument &ex) {
@@ -138,7 +142,9 @@ PredictorContext NewPytorch(char *model_file, int batch, int mode) {
 }
 
 void SetModePytorch(int mode) {
-  if(mode == 1) torch::Device device(torch::kCUDA);
+  if(mode == 1) {
+    //mode_ = torch::kCUDA;
+  }
 }
 
 void InitPytorch() {}
