@@ -9,6 +9,8 @@ extern "C" {
 
 typedef void *PredictorContext;
 
+typedef enum { CPU_DEVICE_KIND = 0, CUDA_DEVICE_KIND = 1 } DeviceKind;
+
 PredictorContext NewPytorch(char *model_file, int batch,
                           int mode);
 

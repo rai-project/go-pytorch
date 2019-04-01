@@ -17,9 +17,11 @@ import (
 	"github.com/rai-project/tracer"
 )
 
+type Device int
+
 const (
-	CPUMode = 0
-	GPUMode = 1
+	CPUDevice  Device = Device(C.CPU_DEVICE_KIND)
+	CUDADevice        = Device(C.CUDA_DEVICE_KIND)
 )
 
 type Predictor struct {
@@ -37,33 +39,30 @@ func New(ctx context.Context, opts ...options.Option) (*Predictor, error) {
 		return nil, errors.Errorf("file %s not found", modelFile)
 	}
 
-	mode := CPUMode
+	device := C.DeviceKind(CPUDevice)
 	if options.UsesGPU() {
 		if !nvidiasmi.HasGPU {
 			return nil, errors.New("no GPU device")
 		}
-		SetUseGPU()
-		mode = GPUMode
-	} else {
-		SetUseCPU()
+		device = C.DeviceKind(CUDADevice)
 	}
 
 	return &Predictor{
 		ctx: C.NewPytorch(
 			C.CString(modelFile),
 			C.int(options.BatchSize()),
-			C.int(mode),
+			C.int(device),
 		),
 		options: options,
 	}, nil
 }
 
 func SetUseCPU() {
-	C.SetModePytorch(C.int(CPUMode))
+	C.SetModePytorch(C.int(0))
 }
 
 func SetUseGPU() {
-	C.SetModePytorch(C.int(GPUMode))
+	C.SetModePytorch(C.int(1))
 }
 
 func init() {

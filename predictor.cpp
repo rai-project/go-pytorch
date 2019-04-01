@@ -65,7 +65,7 @@ class EndProfile {
 
 class Predictor {
   public:
-    Predictor(const string &model_file, int batch, torch::DeviceType mode);
+    Predictor(const string &model_file, int batch, DeviceKind device);
     void Predict(float* inputData);
 
     std::shared_ptr<torch::jit::script::Module> net_;
@@ -80,12 +80,12 @@ class Predictor {
     at::Tensor result_;
 };
 
-Predictor::Predictor(const string &model_file, int batch, torch::DeviceType mode) {
+Predictor::Predictor(const string &model_file, int batch, DeviceKind device) {
   
   // Load the network
   net_ = torch::jit::load(model_file);
   assert(net_ != nullptr);
-  mode_ = mode;
+  if (device == CUDA_DEVICE_KIND) mode_ = torch::kCUDA;
   batch_ = batch;
 
 }
@@ -129,9 +129,9 @@ void Predictor::Predict(float* inputData) {
 PredictorContext NewPytorch(char *model_file, int batch, int mode) {
   
   try {
-    torch::DeviceType mode_temp{torch::kCPU};
-    if (mode == 1) mode_temp = torch::kCUDA;
-    const auto ctx = new Predictor(model_file, batch, (torch::DeviceType)mode_temp);
+    DeviceKind device_temp{CPU_DEVICE_KIND};
+    if (mode == 1) device_temp = CUDA_DEVICE_KIND;
+    const auto ctx = new Predictor(model_file, batch, (DeviceKind)device_temp);
     return (void *)ctx;
   } catch (const std::invalid_argument &ex) {
     LOG(ERROR) << "exception: " << ex.what();

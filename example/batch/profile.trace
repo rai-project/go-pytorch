@@ -3,8 +3,8 @@
 {
   "name": "contiguous",
   "ph": "X",
-  "ts": 20383.241000,
-  "dur": 2.469000,
+  "ts": 20404.857000,
+  "dur": 2.522000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -13,8 +13,8 @@
 {
   "name": "empty",
   "ph": "X",
-  "ts": 20404.311000,
-  "dur": 4.261000,
+  "ts": 20429.395000,
+  "dur": 4.957000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -23,8 +23,8 @@
 {
   "name": "cudnn_convolution",
   "ph": "X",
-  "ts": 20414.358000,
-  "dur": 1833.707000,
+  "ts": 20440.250000,
+  "dur": 1797.723000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -33,8 +33,8 @@
 {
   "name": "_convolution",
   "ph": "X",
-  "ts": 20368.610000,
-  "dur": 1886.478000,
+  "ts": 20390.653000,
+  "dur": 1850.599000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -43,8 +43,8 @@
 {
   "name": "_convolution",
   "ph": "X",
-  "ts": 20358.162000,
-  "dur": 1898.517000,
+  "ts": 20380.550000,
+  "dur": 1862.892000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -53,8 +53,8 @@
 {
   "name": "threshold_",
   "ph": "X",
-  "ts": 22265.750000,
-  "dur": 58.455000,
+  "ts": 22252.397000,
+  "dur": 63.573000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -63,8 +63,8 @@
 {
   "name": "threshold_",
   "ph": "X",
-  "ts": 22261.304000,
-  "dur": 63.027000,
+  "ts": 22248.116000,
+  "dur": 67.981000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -73,8 +73,8 @@
 {
   "name": "max_pool2d_with_indices",
   "ph": "X",
-  "ts": 22336.061000,
-  "dur": 335.802000,
+  "ts": 22327.936000,
+  "dur": 350.533000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -83,8 +83,8 @@
 {
   "name": "max_pool2d_with_indices",
   "ph": "X",
-  "ts": 22332.769000,
-  "dur": 340.002000,
+  "ts": 22324.693000,
+  "dur": 354.755000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -93,8 +93,8 @@
 {
   "name": "contiguous",
   "ph": "X",
-  "ts": 22678.124000,
-  "dur": 0.423000,
+  "ts": 22685.461000,
+  "dur": 0.426000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -103,8 +103,8 @@
 {
   "name": "empty",
   "ph": "X",
-  "ts": 22682.305000,
-  "dur": 1.701000,
+  "ts": 22689.159000,
+  "dur": 1.979000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -113,8 +113,8 @@
 {
   "name": "cudnn_convolution",
   "ph": "X",
-  "ts": 22685.456000,
-  "dur": 413.568000,
+  "ts": 22692.300000,
+  "dur": 430.748000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -123,8 +123,8 @@
 {
   "name": "_convolution",
   "ph": "X",
-  "ts": 22676.782000,
-  "dur": 423.530000,
+  "ts": 22684.086000,
+  "dur": 440.012000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -133,8 +133,8 @@
 {
   "name": "_convolution",
   "ph": "X",
-  "ts": 22675.889000,
-  "dur": 425.108000,
+  "ts": 22682.675000,
+  "dur": 442.122000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -143,8 +143,8 @@
 {
   "name": "threshold_",
   "ph": "X",
-  "ts": 23102.552000,
-  "dur": 12.415000,
+  "ts": 23126.240000,
+  "dur": 13.197000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -153,8 +153,8 @@
 {
   "name": "threshold_",
   "ph": "X",
-  "ts": 23101.681000,
-  "dur": 13.415000,
+  "ts": 23125.386000,
+  "dur": 14.160000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -163,8 +163,8 @@
 {
   "name": "max_pool2d_with_indices",
   "ph": "X",
-  "ts": 23124.567000,
-  "dur": 15.133000,
+  "ts": 23142.647000,
+  "dur": 15.346000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -173,8 +173,8 @@
 {
   "name": "max_pool2d_with_indices",
   "ph": "X",
-  "ts": 23124.148000,
-  "dur": 16.028000,
+  "ts": 23142.269000,
+  "dur": 16.135000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -183,8 +183,8 @@
 {
   "name": "contiguous",
   "ph": "X",
-  "ts": 23143.097000,
-  "dur": 0.378000,
+  "ts": 23161.450000,
+  "dur": 0.361000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -193,8 +193,8 @@
 {
   "name": "empty",
   "ph": "X",
-  "ts": 23146.392000,
-  "dur": 1.309000,
+  "ts": 23164.753000,
+  "dur": 1.602000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -203,8 +203,8 @@
 {
   "name": "cudnn_convolution",
   "ph": "X",
-  "ts": 23148.614000,
-  "dur": 85.006000,
+  "ts": 23167.087000,
+  "dur": 88.595000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -213,8 +213,8 @@
 {
   "name": "_convolution",
   "ph": "X",
-  "ts": 23142.363000,
-  "dur": 91.806000,
+  "ts": 23160.731000,
+  "dur": 95.475000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -223,8 +223,8 @@
 {
   "name": "_convolution",
   "ph": "X",
-  "ts": 23141.918000,
-  "dur": 92.534000,
+  "ts": 23160.250000,
+  "dur": 96.282000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -233,8 +233,8 @@
 {
   "name": "threshold_",
   "ph": "X",
-  "ts": 23235.317000,
-  "dur": 8.217000,
+  "ts": 23257.006000,
+  "dur": 8.144000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -243,8 +243,8 @@
 {
   "name": "threshold_",
   "ph": "X",
-  "ts": 23235.009000,
-  "dur": 8.626000,
+  "ts": 23256.663000,
+  "dur": 8.607000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -253,8 +253,8 @@
 {
   "name": "contiguous",
   "ph": "X",
-  "ts": 23244.632000,
-  "dur": 0.259000,
+  "ts": 23266.262000,
+  "dur": 0.262000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -263,8 +263,8 @@
 {
   "name": "empty",
   "ph": "X",
-  "ts": 23246.833000,
-  "dur": 0.930000,
+  "ts": 23268.567000,
+  "dur": 4.575000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -273,8 +273,8 @@
 {
   "name": "cudnn_convolution",
   "ph": "X",
-  "ts": 23248.231000,
-  "dur": 28.315000,
+  "ts": 23273.628000,
+  "dur": 29.035000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -283,8 +283,8 @@
 {
   "name": "_convolution",
   "ph": "X",
-  "ts": 23244.201000,
-  "dur": 32.747000,
+  "ts": 23265.820000,
+  "dur": 37.251000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -293,8 +293,8 @@
 {
   "name": "_convolution",
   "ph": "X",
-  "ts": 23243.885000,
-  "dur": 33.263000,
+  "ts": 23265.494000,
+  "dur": 37.801000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -303,8 +303,8 @@
 {
   "name": "threshold_",
   "ph": "X",
-  "ts": 23277.532000,
-  "dur": 6.372000,
+  "ts": 23303.723000,
+  "dur": 6.531000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -313,8 +313,8 @@
 {
   "name": "threshold_",
   "ph": "X",
-  "ts": 23277.250000,
-  "dur": 6.750000,
+  "ts": 23303.425000,
+  "dur": 6.932000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -323,8 +323,8 @@
 {
   "name": "contiguous",
   "ph": "X",
-  "ts": 23284.869000,
-  "dur": 0.252000,
+  "ts": 23311.222000,
+  "dur": 0.267000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -333,8 +333,8 @@
 {
   "name": "empty",
   "ph": "X",
-  "ts": 23286.721000,
-  "dur": 0.810000,
+  "ts": 23313.127000,
+  "dur": 0.755000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -343,8 +343,8 @@
 {
   "name": "cudnn_convolution",
   "ph": "X",
-  "ts": 23288.014000,
-  "dur": 59.459000,
+  "ts": 23314.310000,
+  "dur": 56.015000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -353,8 +353,8 @@
 {
   "name": "_convolution",
   "ph": "X",
-  "ts": 23284.514000,
-  "dur": 63.417000,
+  "ts": 23310.837000,
+  "dur": 59.943000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -363,8 +363,8 @@
 {
   "name": "_convolution",
   "ph": "X",
-  "ts": 23284.212000,
-  "dur": 64.068000,
+  "ts": 23310.553000,
+  "dur": 60.566000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -373,8 +373,8 @@
 {
   "name": "threshold_",
   "ph": "X",
-  "ts": 23348.807000,
-  "dur": 6.177000,
+  "ts": 23371.503000,
+  "dur": 5.895000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -383,8 +383,8 @@
 {
   "name": "threshold_",
   "ph": "X",
-  "ts": 23348.512000,
-  "dur": 6.576000,
+  "ts": 23371.239000,
+  "dur": 6.265000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -393,8 +393,8 @@
 {
   "name": "max_pool2d_with_indices",
   "ph": "X",
-  "ts": 23357.378000,
-  "dur": 9.635000,
+  "ts": 23379.798000,
+  "dur": 9.995000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -403,8 +403,8 @@
 {
   "name": "max_pool2d_with_indices",
   "ph": "X",
-  "ts": 23357.134000,
-  "dur": 10.204000,
+  "ts": 23379.506000,
+  "dur": 10.668000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -413,8 +413,8 @@
 {
   "name": "size",
   "ph": "X",
-  "ts": 23368.792000,
-  "dur": 1.682000,
+  "ts": 23395.589000,
+  "dur": 1.470000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -423,8 +423,8 @@
 {
   "name": "view",
   "ph": "X",
-  "ts": 23379.459000,
-  "dur": 16.931000,
+  "ts": 23404.833000,
+  "dur": 23.406000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -433,8 +433,8 @@
 {
   "name": "view",
   "ph": "X",
-  "ts": 23374.729000,
-  "dur": 21.828000,
+  "ts": 23400.879000,
+  "dur": 27.533000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -443,8 +443,8 @@
 {
   "name": "sizes",
   "ph": "X",
-  "ts": 23396.761000,
-  "dur": 0.155000,
+  "ts": 23428.621000,
+  "dur": 0.167000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -453,8 +453,8 @@
 {
   "name": "_fused_dropout",
   "ph": "X",
-  "ts": 23403.875000,
-  "dur": 6950.330000,
+  "ts": 23432.108000,
+  "dur": 6908.020000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -463,8 +463,8 @@
 {
   "name": "_fused_dropout",
   "ph": "X",
-  "ts": 23399.696000,
-  "dur": 6954.894000,
+  "ts": 23431.715000,
+  "dur": 6908.751000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -473,8 +473,8 @@
 {
   "name": "t",
   "ph": "X",
-  "ts": 30361.088000,
-  "dur": 8.116000,
+  "ts": 30350.415000,
+  "dur": 9.779000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -483,8 +483,8 @@
 {
   "name": "t",
   "ph": "X",
-  "ts": 30355.269000,
-  "dur": 14.067000,
+  "ts": 30345.173000,
+  "dur": 15.127000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -493,8 +493,8 @@
 {
   "name": "mm",
   "ph": "X",
-  "ts": 30376.761000,
-  "dur": 392.395000,
+  "ts": 30364.439000,
+  "dur": 394.048000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -503,8 +503,8 @@
 {
   "name": "mm",
   "ph": "X",
-  "ts": 30373.136000,
-  "dur": 396.263000,
+  "ts": 30360.580000,
+  "dur": 398.177000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -513,8 +513,8 @@
 {
   "name": "sizes",
   "ph": "X",
-  "ts": 30769.970000,
-  "dur": 0.527000,
+  "ts": 30759.189000,
+  "dur": 0.461000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -523,8 +523,8 @@
 {
   "name": "sizes",
   "ph": "X",
-  "ts": 30770.580000,
-  "dur": 0.125000,
+  "ts": 30759.696000,
+  "dur": 0.138000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -533,8 +533,8 @@
 {
   "name": "add",
   "ph": "X",
-  "ts": 30776.039000,
-  "dur": 42.370000,
+  "ts": 30761.664000,
+  "dur": 49.481000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -543,8 +543,8 @@
 {
   "name": "add",
   "ph": "X",
-  "ts": 30770.957000,
-  "dur": 48.518000,
+  "ts": 30760.082000,
+  "dur": 52.094000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -553,8 +553,8 @@
 {
   "name": "threshold_",
   "ph": "X",
-  "ts": 30829.620000,
-  "dur": 9.646000,
+  "ts": 30822.180000,
+  "dur": 10.398000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -563,8 +563,8 @@
 {
   "name": "threshold_",
   "ph": "X",
-  "ts": 30829.244000,
-  "dur": 10.132000,
+  "ts": 30821.778000,
+  "dur": 10.901000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -573,8 +573,8 @@
 {
   "name": "_fused_dropout",
   "ph": "X",
-  "ts": 30844.710000,
-  "dur": 15.199000,
+  "ts": 30837.677000,
+  "dur": 15.373000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -583,8 +583,8 @@
 {
   "name": "_fused_dropout",
   "ph": "X",
-  "ts": 30844.433000,
-  "dur": 15.601000,
+  "ts": 30837.376000,
+  "dur": 15.804000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -593,8 +593,8 @@
 {
   "name": "t",
   "ph": "X",
-  "ts": 30860.803000,
-  "dur": 2.300000,
+  "ts": 30853.984000,
+  "dur": 2.767000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -603,8 +603,8 @@
 {
   "name": "t",
   "ph": "X",
-  "ts": 30860.507000,
-  "dur": 2.703000,
+  "ts": 30853.707000,
+  "dur": 3.130000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -613,8 +613,8 @@
 {
   "name": "mm",
   "ph": "X",
-  "ts": 30863.546000,
-  "dur": 159.916000,
+  "ts": 30857.171000,
+  "dur": 162.859000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -623,8 +623,8 @@
 {
   "name": "mm",
   "ph": "X",
-  "ts": 30863.351000,
-  "dur": 160.251000,
+  "ts": 30856.990000,
+  "dur": 163.187000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -633,8 +633,8 @@
 {
   "name": "sizes",
   "ph": "X",
-  "ts": 31023.942000,
-  "dur": 0.307000,
+  "ts": 31020.445000,
+  "dur": 0.422000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -643,8 +643,8 @@
 {
   "name": "sizes",
   "ph": "X",
-  "ts": 31024.314000,
-  "dur": 0.139000,
+  "ts": 31020.927000,
+  "dur": 0.148000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -653,8 +653,8 @@
 {
   "name": "add",
   "ph": "X",
-  "ts": 31025.089000,
-  "dur": 12.620000,
+  "ts": 31021.965000,
+  "dur": 13.521000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -663,8 +663,8 @@
 {
   "name": "add",
   "ph": "X",
-  "ts": 31024.559000,
-  "dur": 13.930000,
+  "ts": 31021.215000,
+  "dur": 14.955000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -673,8 +673,8 @@
 {
   "name": "threshold_",
   "ph": "X",
-  "ts": 31041.167000,
-  "dur": 7.514000,
+  "ts": 31039.163000,
+  "dur": 8.562000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -683,8 +683,8 @@
 {
   "name": "threshold_",
   "ph": "X",
-  "ts": 31040.915000,
-  "dur": 7.877000,
+  "ts": 31038.828000,
+  "dur": 8.997000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -693,8 +693,8 @@
 {
   "name": "t",
   "ph": "X",
-  "ts": 31052.419000,
-  "dur": 2.059000,
+  "ts": 31051.173000,
+  "dur": 2.386000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -703,8 +703,8 @@
 {
   "name": "t",
   "ph": "X",
-  "ts": 31052.151000,
-  "dur": 2.406000,
+  "ts": 31050.893000,
+  "dur": 2.758000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -713,8 +713,8 @@
 {
   "name": "mm",
   "ph": "X",
-  "ts": 31054.825000,
-  "dur": 13.688000,
+  "ts": 31053.929000,
+  "dur": 19.193000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -723,8 +723,8 @@
 {
   "name": "mm",
   "ph": "X",
-  "ts": 31054.677000,
-  "dur": 14.065000,
+  "ts": 31053.754000,
+  "dur": 19.562000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -733,8 +733,8 @@
 {
   "name": "sizes",
   "ph": "X",
-  "ts": 31068.854000,
-  "dur": 0.191000,
+  "ts": 31073.455000,
+  "dur": 0.183000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -743,8 +743,8 @@
 {
   "name": "sizes",
   "ph": "X",
-  "ts": 31069.095000,
-  "dur": 0.124000,
+  "ts": 31073.691000,
+  "dur": 0.114000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -753,8 +753,8 @@
 {
   "name": "add",
   "ph": "X",
-  "ts": 31069.563000,
-  "dur": 7.669000,
+  "ts": 31074.176000,
+  "dur": 7.717000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
@@ -763,8 +763,8 @@
 {
   "name": "add",
   "ph": "X",
-  "ts": 31069.309000,
-  "dur": 8.523000,
+  "ts": 31073.917000,
+  "dur": 8.602000,
   "tid": 0,
   "pid": "CPU Functions",
   "args": {}
