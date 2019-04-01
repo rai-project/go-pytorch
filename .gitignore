@@ -8,4 +8,5 @@ cifar-test-leveldb
 
 *.nvprof
 .vscode
+vendor
 
