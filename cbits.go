@@ -45,6 +45,7 @@ func New(ctx context.Context, opts ...options.Option) (*Predictor, error) {
 			return nil, errors.New("no GPU device")
 		}
 		device = C.DeviceKind(CUDADevice)
+		pp.Println("Setting device to GPU in cbits.go ---- ")
 	}
 
 	return &Predictor{

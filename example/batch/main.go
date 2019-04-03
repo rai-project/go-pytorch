@@ -108,8 +108,12 @@ func main() {
 	if nvidiasmi.HasGPU {
 		pytorch.SetUseGPU()
 		device = options.CUDA_DEVICE
+		// INFO
+		pp.Println("Found a GPU in main.go!")
 	} else {
 		pytorch.SetUseCPU()
+		// INFO
+		pp.Println("Found a CPU instead of a GPU in main.go!")
 	}
 
 	ctx := context.Background()
