@@ -83,11 +83,12 @@ class Predictor {
 Predictor::Predictor(const string &model_file, int batch, DeviceKind device) {
   
   // Load the network
+  //if (device == CUDA_DEVICE_KIND) autograd::profiler::enableProfiler(autograd::profiler::ProfilerState::NVTX);
   net_ = torch::jit::load(model_file);
   assert(net_ != nullptr);
   if (device == CUDA_DEVICE_KIND) mode_ = torch::kCUDA;
   batch_ = batch;
-
+  //if (device == CUDA_DEVICE_KIND) autograd::profiler::enableProfiler(autograd::profiler::ProfilerState::NVTX);
 }
 
 void Predictor::Predict(float* inputData) {
