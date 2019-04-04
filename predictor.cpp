@@ -83,7 +83,6 @@ class Predictor {
 Predictor::Predictor(const string &model_file, int batch, DeviceKind device) {
   
   // Load the network
-  //if (device == CUDA_DEVICE_KIND) autograd::profiler::enableProfiler(autograd::profiler::ProfilerState::NVTX);
   net_ = torch::jit::load(model_file);
   assert(net_ != nullptr);
   if (device == CUDA_DEVICE_KIND) mode_ = torch::kCUDA;
@@ -99,8 +98,6 @@ void Predictor::Predict(float* inputData) {
 
   std::vector<torch::jit::IValue> inputs;
   if(mode_ == torch::kCUDA) {
-    // debug
-    std::cout << "Running on GPU in Predict()" << std::endl;
     net_->to(at::kCUDA);
     at::Tensor tensor_image_cuda = tensor_image.to(at::kCUDA);
     inputs.emplace_back(tensor_image_cuda);
@@ -114,8 +111,6 @@ void Predictor::Predict(float* inputData) {
       result_ = net_->forward(inputs).toTensor();
     }
   }else {
-    // debug
-    std::cout << "Running on CPU in Predict()" << std::endl;
     inputs.emplace_back(tensor_image);
     if (profile_enabled_) {
       {
@@ -136,8 +131,6 @@ PredictorContext NewPytorch(char *model_file, int batch, int mode) {
   try {
     DeviceKind device_temp{CPU_DEVICE_KIND};
     if (mode == 1) device_temp = CUDA_DEVICE_KIND;
-    // debug
-    std::cout << "mode value in NewPytorch() --- " << mode << std::endl;
     const auto ctx = new Predictor(model_file, batch, (DeviceKind)device_temp);
     return (void *)ctx;
   } catch (const std::invalid_argument &ex) {

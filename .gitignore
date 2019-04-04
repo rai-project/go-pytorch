@@ -10,3 +10,4 @@ cifar-test-leveldb
 .vscode
 vendor
 builtin_models/*.pt
+example/batch/profile.trace

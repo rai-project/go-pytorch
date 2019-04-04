@@ -13,7 +13,8 @@ for name, f in models.items():
 		print("Processing " + name)
 		model = f(pretrained=True)
 		traced_script_module = torch.jit.trace(model, fake_input, check_trace=False)
-		traced_script_module.save("/data/models/" + name + ".pt")
+		traced_script_module.save(name + ".pt")
 	except:
 		print("Unexpected error:", sys.exc_info())
 		pass
+

@@ -31,7 +31,7 @@ var (
 	batchSize  = 64
 	model      = "alexnet"
 	graph_url  = "https://s3.amazonaws.com/store.carml.org/models/pytorch/alexnet.pt"
-	synset_url = "http://data.dmlc.ml/mxnet/models/imagenet/synset.txt"
+	synset_url = "http://s3.amazonaws.com/store.carml.org/synsets/imagenet/synset.txt"
 )
 
 // convert go Image to 1-dim array
@@ -108,12 +108,8 @@ func main() {
 	if nvidiasmi.HasGPU {
 		pytorch.SetUseGPU()
 		device = options.CUDA_DEVICE
-		// INFO
-		pp.Println("Found a GPU in main.go!")
 	} else {
 		pytorch.SetUseCPU()
-		// INFO
-		pp.Println("Found a CPU instead of a GPU in main.go!")
 	}
 
 	ctx := context.Background()
@@ -158,14 +154,11 @@ func main() {
 	//  cu.Close()
 	//}
 
-	profBuffer, err := predictor.ReadProfile()
-	if err != nil {
-		panic(err)
-	}
+	//profBuffer, err := predictor.ReadProfile()
+	//if err != nil {
+	//	panic(err)
+	//}
 	predictor.DisableProfiling()
-
-	// INFO
-	pp.Println("Profiler output - ", profBuffer)
 
 	//t, err := ctimer.New(profBuffer)
 	//if err != nil {
