@@ -9,4 +9,4 @@ cifar-test-leveldb
 *.nvprof
 .vscode
 vendor
-
+builtin_models/*.pt
