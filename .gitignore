@@ -11,3 +11,5 @@ cifar-test-leveldb
 vendor
 builtin_models/*.pt
 example/batch/profile.trace
+example/object_detection/profile.trace
+example/object_detection/*.pt

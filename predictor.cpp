@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 #include <iostream>
+#include <typeinfo>
 
 #include <torch/torch.h>
 #include <torch/script.h>
@@ -78,6 +79,7 @@ class Predictor {
     std::string filename{"profile.trace"};
     bool profile_enabled_{false};
     at::Tensor result_;
+    std::vector<at::Tensor> result_tensors;
 };
 
 Predictor::Predictor(const string &model_file, int batch, DeviceKind device) {
@@ -98,31 +100,85 @@ void Predictor::Predict(float* inputData) {
 
   std::vector<torch::jit::IValue> inputs;
   if(mode_ == torch::kCUDA) {
+  
     net_->to(at::kCUDA);
     at::Tensor tensor_image_cuda = tensor_image.to(at::kCUDA);
     inputs.emplace_back(tensor_image_cuda);
+
     if (profile_enabled_) {
+      
       {
-        //autograd::profiler::enableProfiler(autograd::profiler::ProfilerState::CUDA);
         autograd::profiler::RecordProfile guard(filename);
-        result_ = net_->forward(inputs).toTensor();
+        auto temp = net_->forward(inputs);
+			
+        if(temp.isTensor()) {
+          result_tensors.push_back(temp.toTensor());
+        }else if(temp.isTuple()) {
+          auto elems = temp.toTuple()->elements();
+          for(size_t i = 0; i < elems.size(); i++) result_tensors.emplace_back(elems[i].toTensor());
+        }else {
+          std::cout << "ERROR: Neither a Tensor nor a Tuple!" << std::endl;
+        }
+
+       }
+
+   } else {
+
+      auto temp = net_->forward(inputs);
+
+      if(temp.isTensor()) {
+        result_tensors.push_back(temp.toTensor());
+      } else if(temp.isTuple()) {
+        auto elems = temp.toTuple()->elements();
+        for(size_t i = 0; i < elems.size(); i++) result_tensors.emplace_back(elems[i].toTensor());
+      } else {
+        std::cout << "ERROR: Neither a Tensor nor a Tuple!" << std::endl;
       }
-    } else {
-      result_ = net_->forward(inputs).toTensor();
-    }
-  }else {
+
+   }
+
+  } else {
     inputs.emplace_back(tensor_image);
     if (profile_enabled_) {
+      
       {
-        //autograd::profiler::enableProfiler(autograd::profiler::ProfilerState::CPU);
         autograd::profiler::RecordProfile guard(filename);
-        result_ = net_->forward(inputs).toTensor();
+        auto temp = net_->forward(inputs);
+
+        if(temp.isTensor()) {
+          result_tensors.push_back(temp.toTensor());
+        } else if(temp.isTuple()) {
+          auto elems = temp.toTuple()->elements();
+          for(size_t i = 0; i < elems.size(); i++) result_tensors.emplace_back(elems[i].toTensor());
+        } else {
+          std::cout << "ERROR: Neither a Tensor nor a Tuple!" << std::endl;
+        }
+
       }
+
     } else {
-      result_ = net_->forward(inputs).toTensor();
-    }
+      auto temp = net_->forward(inputs);
+
+      if(temp.isTensor()) {
+        result_tensors.push_back(temp.toTensor());
+      } else if(temp.isTuple()) {
+        auto elems = temp.toTuple()->elements();
+        result_tensors.reserve(elems.size());
+        for(size_t i = 0; i < elems.size(); i++) { 
+          auto temp_read = elems[i].toTensor();
+          std::cout << "temp_read: " << typeid(temp_read).name() << std::endl;
+          result_tensors.push_back(temp_read);
+        }
+      } else {
+        std::cout << "ERROR: Neither a Tensor nor a Tuple!" << std::endl;
+      }
+
+   }
+
   }
-  result_ = result_.to(at::kCPU);
+	
+  for(size_t i = 0; result_tensors.size(); i++)
+    result_tensors[i] = result_tensors[i].to(at::kCPU);
 
 }
 
