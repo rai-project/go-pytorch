@@ -115,7 +115,7 @@ void Predictor::Predict(float* inputData) {
           result_tensors.push_back(temp.toTensor());
         }else if(temp.isTuple()) {
           auto elems = temp.toTuple()->elements();
-          for(size_t i = 0; i < elems.size(); i++) result_tensors.emplace_back(elems[i].toTensor());
+          for(size_t i = 0; i < elems.size(); i++) result_tensors.push_back(elems[i].toTensor());
         }else {
           std::cout << "ERROR: Neither a Tensor nor a Tuple!" << std::endl;
         }
@@ -127,7 +127,7 @@ void Predictor::Predict(float* inputData) {
       auto temp = net_->forward(inputs);
 
       if(temp.isTensor()) {
-        result_tensors.push_back(temp.toTensor());
+        result_tensors.emplace_back(temp.toTensor());
       } else if(temp.isTuple()) {
         auto elems = temp.toTuple()->elements();
         for(size_t i = 0; i < elems.size(); i++) result_tensors.emplace_back(elems[i].toTensor());
@@ -146,7 +146,7 @@ void Predictor::Predict(float* inputData) {
         auto temp = net_->forward(inputs);
 
         if(temp.isTensor()) {
-          result_tensors.push_back(temp.toTensor());
+          result_tensors.emplace_back(temp.toTensor());
         } else if(temp.isTuple()) {
           auto elems = temp.toTuple()->elements();
           for(size_t i = 0; i < elems.size(); i++) result_tensors.emplace_back(elems[i].toTensor());
@@ -160,14 +160,11 @@ void Predictor::Predict(float* inputData) {
       auto temp = net_->forward(inputs);
 
       if(temp.isTensor()) {
-        result_tensors.push_back(temp.toTensor());
+        result_tensors.emplace_back(temp.toTensor());
       } else if(temp.isTuple()) {
         auto elems = temp.toTuple()->elements();
-        result_tensors.reserve(elems.size());
         for(size_t i = 0; i < elems.size(); i++) { 
-          auto temp_read = elems[i].toTensor();
-          std::cout << "temp_read: " << typeid(temp_read).name() << std::endl;
-          result_tensors.push_back(temp_read);
+          result_tensors.emplace_back(elems[i].toTensor());
         }
       } else {
         std::cout << "ERROR: Neither a Tensor nor a Tuple!" << std::endl;
@@ -177,8 +174,9 @@ void Predictor::Predict(float* inputData) {
 
   }
 	
-  for(size_t i = 0; result_tensors.size(); i++)
+  for(size_t i = 0; i < result_tensors.size(); i++) {
     result_tensors[i] = result_tensors[i].to(at::kCPU);
+  }
 
 }
 
