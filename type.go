@@ -8,6 +8,7 @@ import "reflect"
 type DType C.Torch_DataType
 
 const (
+	UnknownType DType = C.Torch_Unknown
 	// Byte byte tensors (go type uint8)
 	Byte DType = C.Torch_Byte
 	// Char char tensor (go type int8)

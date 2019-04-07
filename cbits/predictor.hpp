@@ -5,18 +5,31 @@
 #define _GLIBCXX_USE_CXX11_ABI 0
 
 #include <stddef.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
 
-#include <torch/script.h>
-#include <torch/torch.h>
+#ifdef __cplusplus
 
+#ifndef PROFILING_ENABLED
+#ifndef PROFILING_DISABLED
 // profiling is enabled only if you have the include file
 #if __has_include(<../../autograd/profiler.h>)
 #include <../../autograd/profiler.h>
 #define PROFILING_ENABLED 1
-#endif
+#endif  //  __has_include(<../../autograd/profiler.h>)
+#endif  // PROFILING_DISABLED
+#endif  // PROFILING_ENABLED
 
-#ifdef __cplusplus
+#include <torch/script.h>
+#include <torch/torch.h>
+
+struct Torch_Tensor {
+  torch::Tensor tensor;
+};
+
 extern "C" {
+
 #endif  // __cplusplus
 
 typedef enum Torch_DataType {
@@ -33,6 +46,7 @@ typedef enum Torch_DataType {
 } Torch_DataType;
 
 typedef enum Torch_IValueType {
+  Torch_IValueTypeUnknown = 0,
   Torch_IValueTypeTensor = 1,
   Torch_IValueTypeTuple = 2,
 } Torch_IValueType;
@@ -58,6 +72,8 @@ typedef struct Torch_Error {
   char* message;
 } Torch_Error;
 
+extern Torch_Error Torch_GlobalError;
+
 typedef enum { CPU_DEVICE_KIND = 0, CUDA_DEVICE_KIND = 1 } Torch_DeviceKind;
 
 typedef void* Torch_PredictorContext;
@@ -70,19 +86,25 @@ void InitPytorch();
 
 // Predictor
 
-Torch_PredictorContext Torch_NewPredictor(char* model_file, int batch, int mode);
-
-void Torch_PredictorSetMode(int mode);
+Torch_PredictorContext Torch_NewPredictor(const char* model_file, Torch_DeviceKind mode);
 
 void Torch_PredictorAddInput(Torch_PredictorContext pred, Torch_DataType ty, void* data);
 
-void Torch_PredictorRun(Torch_PredictorContext pred);
+void Torch_PredictorRun(Torch_PredictorContext pred, Torch_TensorContext* cInputs, int inputLength);
 
-const int Torch_PredictorNumOutputs(Torch_PredictorContext pred);
+int Torch_PredictorNumOutputs(Torch_PredictorContext pred);
 
 Torch_IValue Torch_PredictorGetOutput(Torch_PredictorContext pred);
 
 void Torch_PredictorDelete(Torch_PredictorContext pred);
+
+// Error
+
+char Torch_HasError();
+
+const char* Torch_GetErrorString();
+
+void Torch_ResetError();
 
 // IValue
 
@@ -91,8 +113,7 @@ void Torch_IValueDelete(Torch_IValue val);
 // Tuple
 
 int Torch_TupleLength(Torch_TupleContext tup);
-Torch_TensorContext Torch_TupleElement(Torch_TupleContext tup, int elem);
-
+Torch_IValue Torch_TupleElement(Torch_TupleContext tup, int elem);
 void Torch_TupleDelete(Torch_TupleContext tup);
 
 // Tensor
@@ -105,17 +126,18 @@ void Torch_DeleteTensor(Torch_TensorContext ctx);
 void Torch_PrintTensors(Torch_TensorContext* tensors, size_t input_size);
 
 // Profile
-void StartProfilingPytorch(Torch_PredictorContext pred, const char* name, const char* metadata);
+void Torch_ProfilingStart(Torch_PredictorContext pred, const char* name, const char* metadata);
 
-void EndProfilingPytorch(Torch_PredictorContext pred);
+void Torch_ProfilingEnd(Torch_PredictorContext pred);
 
-void EnableProfilingPytorch(Torch_PredictorContext pred);
+void Torch_ProfilingEnable(Torch_PredictorContext pred);
 
-void DisableProfilingPytorch(Torch_PredictorContext pred);
+void Torch_ProfilingDisable(Torch_PredictorContext pred);
 
-char* ReadProfilePytorch(Torch_PredictorContext pred);
+char* Torch_ProfilingRead(Torch_PredictorContext pred);
 
 // JIT
+#ifdef ENABLE_PYTROCH_JIT
 Torch_JITModuleContext Torch_CompileTorchScript(char* script, Torch_Error* error);
 Torch_JITModuleContext Torch_LoadJITModule(char* path, Torch_Error* error);
 void Torch_ExportJITModule(Torch_JITModuleContext ctx, char* path, Torch_Error* error);
@@ -127,7 +149,7 @@ Torch_ModuleMethodArgument* Torch_JITModuleMethodArguments(Torch_JITModuleMethod
 Torch_ModuleMethodArgument* Torch_JITModuleMethodReturns(Torch_JITModuleMethodContext ctx, size_t* res_size);
 void Torch_DeleteJITModuleMethod(Torch_JITModuleMethodContext ctx);
 void Torch_DeleteJITModule(Torch_JITModuleContext ctx);
-
+#endif  // ENABLE_PYTROCH_JIT
 #ifdef __cplusplus
 }
 #endif  // __cplusplus

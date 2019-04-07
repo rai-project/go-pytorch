@@ -32,7 +32,7 @@ func NewTensor(value interface{}) (*Tensor, error) {
 func NewTensorWithShape(value interface{}, shape []int64, dt DType) (*Tensor, error) {
 	nflattened := numElements(shape)
 	nbytes := typeOf(dt, nil).Size() * uintptr(nflattened)
-	dataPtr := C.malloc(C.size_t(nbytes))
+	dataPtr := unsafe.Pointer(C.malloc(C.size_t(nbytes)))
 	dataSlice := (*[1 << 30]byte)(dataPtr)[:nbytes:nbytes]
 
 	buf := bytes.NewBuffer(dataSlice[:0:nbytes])

@@ -11,13 +11,6 @@
 
 #include "error.hpp"
 #include "predictor.hpp"
-#include "profiler.hpp"
-#include "timer.h"
-#include "timer.impl.hpp"
-
-struct Torch_Tensor {
-  torch::Tensor tensor;
-};
 
 torch::TensorOptions Torch_ConvertDataTypeToOptions(Torch_DataType dtype) {
   torch::TensorOptions options;
@@ -143,7 +136,7 @@ Torch_TensorContext Torch_NewTensor(void* input_data, int64_t* dimensions, int n
   std::vector<int64_t> sizes;
   sizes.assign(dimensions, dimensions + n_dim);
 
-  torch::Tensor ten = torch::from_blob(input_data, torch::IntList(sizes), options);
+  torch::Tensor ten = torch::from_blob(input_data, torch::IntArrayRef(sizes), options);
 
   auto tensor = new Torch_Tensor();
   tensor->tensor = ten;

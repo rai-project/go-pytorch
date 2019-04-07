@@ -27,3 +27,22 @@ func checkError(err C.Torch_Error) *Error {
 
 	return nil
 }
+
+func HasError() bool {
+	return int(C.Torch_HasError()) == 0
+}
+
+func GetErrorString() string {
+	return C.GoString(C.Torch_GetErrorString())
+}
+
+func ResetError() {
+	C.Torch_ResetError()
+}
+
+func PanicOnError() {
+	if !HasError() {
+		return
+	}
+	panic(GetErrorString())
+}

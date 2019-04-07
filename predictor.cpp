@@ -28,99 +28,102 @@ extern Torch_IValue Torch_ConvertIValueToTorchIValue(torch::IValue value);
 
 class Predictor {
  public:
-  Predictor(const string &model_file, int batch, DeviceKind device);
-  void Predict(float *inputData);
+  Predictor(const string &model_file, Torch_DeviceKind device);
+  void Predict(Torch_TensorContext *cInputs, int inputLength);
 
   std::shared_ptr<torch::jit::script::Module> net_;
-  std::vector<torch::jit::IValue> inputs_;
-  torch::jit::IValue output_;
+  torch::IValue output_;
   torch::DeviceType mode_{torch::kCPU};
-  profile *prof_{nullptr};
+
   std::stringstream ss_;
+  profile *prof_{nullptr};
   std::string profile_filename_{"profile.trace"};
   bool profile_enabled_{false};
-  at::Tensor result_;
 };
 
-Predictor::Predictor(const string &model_file, int batch, DeviceKind device) {
+Predictor::Predictor(const string &model_file, Torch_DeviceKind device) {
   // Load the network
   net_ = torch::jit::load(model_file);
   assert(net_ != nullptr);
   if (device == CUDA_DEVICE_KIND) mode_ = torch::kCUDA;
-}
 
-void Predictor::AddInput() {
   if (mode_ == torch::kCUDA) {
     net_->to(at::kCUDA);
-    for (auto input : inputs_) {
-      input.to(at::kCUDA);
-    }
   }
 }
 
-void Predictor::Predict() {
-#ifdef PROFILING_ENABLED
-  autograd::profiler::RecordProfile profile_recorder;
-#endif  // PROFILING_ENABLED
+void Predictor::Predict(Torch_TensorContext *cInputs, int inputLength) {
+  std::vector<torch::jit::IValue> inputs(inputLength);
 
-#ifdef PROFILING_ENABLED
+  for (int ii = 0; ii < inputLength; ii++) {
+    at::Tensor tensor = reinterpret_cast<Torch_Tensor *>(cInputs[ii])->tensor;
+    if (mode_ == torch::kCUDA) {
+      tensor = tensor.to(at::kCUDA);
+    }
+    inputs.emplace_back(tensor);
+  }
+
   if (profile_enabled_) {
-    profile_recorder = autograd::profiler::RecordProfile(profile_filename_);
-    result_ = net_->forward(inputs_);
+#ifdef PROFILING_ENABLED
+    autograd::profiler::RecordProfile profile_recorder(profile_filename_);
+#endif  // PROFILING_ENABLED
+    output_ = net_->forward(inputs);
     return;
   }
-#endif  // PROFILING_ENABLED
-  result_ = net_->forward(inputs_);
+  output_ = net_->forward(inputs);
 }
 
-Torch_PredictorContext Torch_NewPredictor(char *model_file, int batch, int mode) {
-  HANDLE_TH_ERRORS
-  DeviceKind device_temp{CPU_DEVICE_KIND};
-  if (mode == 1) device_temp = CUDA_DEVICE_KIND;
-  const auto ctx = new Predictor(model_file, batch, (DeviceKind)device_temp);
-  return (void *)ctx;
-  END_HANDLE_TH_ERRORS(error, nullptr);
+Torch_PredictorContext Torch_NewPredictor(const char *model_file, Torch_DeviceKind mode) {
+  HANDLE_TH_ERRORS(Torch_GlobalError);
+  const auto ctx = new Predictor(model_file, mode);
+  return (Torch_PredictorContext)ctx;
+  END_HANDLE_TH_ERRORS(Torch_GlobalError, (Torch_PredictorContext)0);
 }
-
-void Torch_PredictorSetMode(Torch_DeviceKind mode) { mode_ = mode; }
 
 void InitPytorch() {}
 
-void Torch_PredictorRun(Torch_PredictorContext pred, float *inputData) {
-  HANDLE_TH_ERRORS
+void Torch_PredictorRun(Torch_PredictorContext pred, Torch_TensorContext *cInputs, int inputLength) {
+  HANDLE_TH_ERRORS(Torch_GlobalError);
   auto predictor = (Predictor *)pred;
   if (predictor == nullptr) {
     return;
   }
-  predictor->Predict(inputData);
-  END_HANDLE_TH_ERRORS(error, );
+  predictor->Predict(cInputs, inputLength);
+  END_HANDLE_TH_ERRORS(Torch_GlobalError, );
 }
 
-const int Torch_PredictorNumOutputs(Torch_PredictorContext pred) {
-  HANDLE_TH_ERRORS
+int Torch_PredictorNumOutputs(Torch_PredictorContext pred) {
+  HANDLE_TH_ERRORS(Torch_GlobalError);
   auto predictor = (Predictor *)pred;
   if (predictor == nullptr) {
     return 0;
   }
-  return predictor->result_tensors_.size();
-  END_HANDLE_TH_ERRORS(error, 0);
+  if (predictor->output_.isTensor()) {
+    return 1;
+  }
+  if (predictor->output_.isTuple()) {
+    return predictor->output_.toTuple()->elements().size();
+  }
+
+  return 0;
+  END_HANDLE_TH_ERRORS(Torch_GlobalError, 0);
 }
 
 Torch_IValue Torch_PredictorGetOutput(Torch_PredictorContext pred) {
-  HANDLE_TH_ERRORS
+  HANDLE_TH_ERRORS(Torch_GlobalError);
   auto predictor = (Predictor *)pred;
   if (predictor == nullptr) {
-    return nullptr;
+    return Torch_IValue{};
   }
 
-  output_ = output_.to(at::kCPU);
-  return Torch_ConvertIValueToTorchIValue(output_);
+  // predictor->output_ = predictor->output_.to(at::kCPU);
+  return Torch_ConvertIValueToTorchIValue(predictor->output_);
 
-  END_HANDLE_TH_ERRORS(error, Torch_IValue{});
+  END_HANDLE_TH_ERRORS(Torch_GlobalError, Torch_IValue{});
 }
 
 void Torch_PredictorDelete(Torch_PredictorContext pred) {
-  HANDLE_TH_ERRORS
+  HANDLE_TH_ERRORS(Torch_GlobalError);
   auto predictor = (Predictor *)pred;
   if (predictor == nullptr) {
     return;
@@ -131,5 +134,67 @@ void Torch_PredictorDelete(Torch_PredictorContext pred) {
     predictor->prof_ = nullptr;
   }
   delete predictor;
-  END_HANDLE_TH_ERRORS(error, );
+  END_HANDLE_TH_ERRORS(Torch_GlobalError, );
+}
+
+void Torch_ProfilingStart(Torch_PredictorContext pred, const char *name, const char *metadata) {
+  auto predictor = (Predictor *)pred;
+  if (predictor == nullptr) {
+    return;
+  }
+  if (name == nullptr) {
+    name = "";
+  }
+  if (metadata == nullptr) {
+    metadata = "";
+  }
+  if (predictor->prof_ == nullptr) {
+    predictor->prof_ = new profile(name, metadata);
+  } else {
+    predictor->prof_->reset();
+  }
+}
+
+void Torch_ProfilingEnd(Torch_PredictorContext pred) {
+  auto predictor = (Predictor *)pred;
+  if (predictor == nullptr) {
+    return;
+  }
+  if (predictor->prof_) {
+    predictor->prof_->end();
+  }
+}
+
+void Torch_ProfilingEnable(Torch_PredictorContext pred) {
+  auto predictor = (Predictor *)pred;
+  if (predictor == nullptr) {
+    return;
+  }
+  predictor->profile_enabled_ = true;
+}
+
+void Torch_ProfilingDisable(Torch_PredictorContext pred) {
+  auto predictor = (Predictor *)pred;
+  if (predictor == nullptr) {
+    return;
+  }
+  if (predictor->prof_) {
+    predictor->prof_->reset();
+  }
+  predictor->profile_enabled_ = false;
+}
+
+char *Torch_ProfilingRead(Torch_PredictorContext pred) {
+  HANDLE_TH_ERRORS(Torch_GlobalError);
+  auto predictor = (Predictor *)pred;
+  if (predictor == nullptr) {
+    return strdup("");
+  }
+  if (predictor->prof_ == nullptr) {
+    return strdup("");
+  }
+  const auto prof_output = predictor->ss_.str().c_str();
+  return strdup(prof_output);
+
+  END_HANDLE_TH_ERRORS(Torch_GlobalError, (char *)0);
 }

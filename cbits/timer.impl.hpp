@@ -1,3 +1,4 @@
+#pragma once
 
 #include <chrono>
 #include <cmath>
@@ -20,24 +21,18 @@ using timestamp_t = std::chrono::time_point<std::chrono::system_clock>;
 static timestamp_t now() { return std::chrono::system_clock::now(); }
 
 static double elapsed_time(timestamp_t start, timestamp_t end) {
-  const auto elapsed =
-      std::chrono::duration<double, std::milli>(end - start).count();
+  const auto elapsed = std::chrono::duration<double, std::milli>(end - start).count();
   return elapsed;
 }
 
 static uint64_t to_nanoseconds(timestamp_t t) {
   const auto duration = t.time_since_epoch();
-  return static_cast<uint64_t>(
-      std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count());
+  return static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count());
 }
 
 struct profile_entry {
-  profile_entry(int layer_sequence_index, std::string name,
-                std::string metadata, shapes_t shapes)
-      : layer_sequence_index_(layer_sequence_index),
-        name_(name),
-        metadata_(metadata),
-        shapes_(shapes) {
+  profile_entry(int layer_sequence_index, std::string name, std::string metadata, shapes_t shapes)
+      : layer_sequence_index_(layer_sequence_index), name_(name), metadata_(metadata), shapes_(shapes) {
     start();
   }
   ~profile_entry() {}
@@ -57,14 +52,9 @@ struct profile_entry {
     const auto end_ns = to_nanoseconds(end_);
     uint64_t id = std::hash<std::thread::id>()(std::this_thread::get_id());
     return json{
-        {"name", name_},
-        {"metadata", metadata_},
-        {"layer_type", metadata_},
-        {"start", start_ns},
-        {"end", end_ns},
-        {"layer_sequence_index", layer_sequence_index_},
-        {"shapes", shapes_},
-        {"thread_id", id},
+        {"name", name_},     {"metadata", metadata_}, {"layer_type", metadata_},
+        {"start", start_ns}, {"end", end_ns},         {"layer_sequence_index", layer_sequence_index_},
+        {"shapes", shapes_}, {"thread_id", id},
     };
   }
 
@@ -82,10 +72,7 @@ struct profile_entry {
 };
 
 struct profile {
-  profile(std::string name = "", std::string metadata = "")
-      : name_(name), metadata_(metadata) {
-    start();
-  }
+  profile(std::string name = "", std::string metadata = "") : name_(name), metadata_(metadata) { start(); }
   ~profile() { this->reset(); }
 
   error_t start() {
@@ -146,8 +133,7 @@ struct profile {
       elements.emplace_back(e->to_json());
     }
     return json{
-        {"name", name_}, {"metadata", metadata_}, {"start", start_ns},
-        {"end", end_ns}, {"elements", elements},
+        {"name", name_}, {"metadata", metadata_}, {"start", start_ns}, {"end", end_ns}, {"elements", elements},
     };
   }
 

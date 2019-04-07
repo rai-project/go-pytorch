@@ -3,6 +3,8 @@ package pytorch
 // #include <stdio.h>
 // #include <stdlib.h>
 // #include "cbits/predictor.hpp"
+//
+// size_t size_of_tensor_ctx = sizeof(Torch_TensorContext);
 import "C"
 import (
 	"context"
@@ -19,11 +21,15 @@ import (
 )
 
 type Predictor struct {
-	ctx     C.Torch_PredictorContext
-	options *options.Options
+	ctx          C.Torch_PredictorContext
+	inputsLength int
+	inputs       *C.Torch_TensorContext
+	options      *options.Options
 }
 
 func New(ctx context.Context, opts ...options.Option) (*Predictor, error) {
+	defer PanicOnError()
+
 	span, _ := tracer.StartSpanFromContext(ctx, tracer.MODEL_TRACE, "c_new")
 	defer span.Finish()
 
@@ -41,96 +47,87 @@ func New(ctx context.Context, opts ...options.Option) (*Predictor, error) {
 		device = CUDADeviceKind
 	}
 
+	cModelFile := C.CString(modelFile)
+	defer C.free(unsafe.Pointer(cModelFile))
+
 	pred := &Predictor{
 		ctx: C.Torch_NewPredictor(
-			C.CString(modelFile),
-			C.int(options.BatchSize()),
-			device,
+			cModelFile,
+			C.Torch_DeviceKind(device),
 		),
 		options: options,
 	}
 
 	runtime.SetFinalizer(pred, (*Predictor).finalize)
 
-	return pred, nilf
+	return pred, nil
 }
 
-func SetUseCPU() {
-	C.Torch_PredictorSetMode(CPUDeviceKind)
-}
+func (p *Predictor) Predict(ctx context.Context, inputs []*tensor.Dense) error {
+	defer PanicOnError()
 
-func SetUseGPU() {
-	C.Torch_PredictorSetMode(CUDADeviceKind)
-}
-
-func (p *Predictor) Predict(ctx context.Context, data []float32, dims []int) error {
-
-	if data == nil || len(data) < 1 {
+	if len(inputs) < 1 {
 		return fmt.Errorf("input nil or empty")
 	}
 
-	batchSize := p.options.BatchSize()
+	inputsLength := len(inputs)
+	cInputs := (*C.Torch_TensorContext)(C.malloc(C.size_of_tensor_ctx * C.ulong(inputsLength)))
 
-	shapeLen := int(channels * width * height)
-	inputCount := dataLen / shapeLen
-	if batchSize > inputCount {
-		padding := make([]float32, (batchSize-inputCount)*shapeLen)
-		data = append(data, padding...)
+	p.inputs = cInputs
+	p.inputsLength = inputsLength
+
+	inputSlice := (*[1 << 30]C.Torch_TensorContext)(unsafe.Pointer(cInputs))[:inputsLength:inputsLength]
+
+	for ii, input := range inputs {
+		inputSlice[ii] = toTensorCtx(input)
 	}
-
-	ptr := (*C.float)(unsafe.Pointer(&data[0]))
 
 	predictSpan, _ := tracer.StartSpanFromContext(ctx, tracer.MODEL_TRACE, "c_predict")
 	defer predictSpan.Finish()
 
-	C.Torch_PredictorRun(p.ctx, ptr)
+	C.Torch_PredictorRun(p.ctx, cInputs, C.int(inputsLength))
 
 	return nil
 }
 
 func (p *Predictor) ReadPredictionOutput(ctx context.Context) ([]tensor.Tensor, error) {
+	defer PanicOnError()
+
 	span, _ := tracer.StartSpanFromContext(ctx, tracer.MODEL_TRACE, "c_read_predicted_output")
 	defer span.Finish()
 
 	cNumOutputs := int(C.Torch_PredictorNumOutputs(p.ctx))
-	if cNumOfSizes == 0 {
+	if cNumOutputs == 0 {
 		return nil, errors.New("zero number of tensors")
 	}
 
 	cPredictions := C.Torch_PredictorGetOutput(p.ctx)
-	if cPredictions == nil {
+	defer C.Torch_IValueDelete(cPredictions)
+
+	if cPredictions.itype == C.Torch_IValueTypeUnknown {
 		return nil, errors.New("empty predictions")
 	}
 
-	defer C.Torch_IValueDelete(cPredictions)
+	return ivalueToTensor(cPredictions), nil
+}
 
-	if cPredictions.itype == C.Torch_IValueTypeTensor {
-		tensorCtx := (*C.Torch_TensorContext)(&cPredictions.data_ptr)
-		tensr := tensorCtxToTensor(tensorCtx)
-		return []tensor.Tensor{tensr}, nil
+func (p *Predictor) freeInputs() {
+	if p.inputs != nil {
+		return
+	}
+	inputSlice := (*[1 << 30]C.Torch_TensorContext)(unsafe.Pointer(p.inputs))[:p.inputsLength:p.inputsLength]
+	for _, input := range inputSlice {
+		C.Torch_DeleteTensor(input)
 	}
 
-	if cPredictions.itype != C.Torch_IValueTypeTuple {
-		return nil, errors.New("expecting a C.Torch_IValueTypeTuple type")
-	}
-
-	tupleCtx := (*C.Torch_TupleContext)(&cPredictions.data_ptr)
-	tupleLength := int(C.Torch_TupleLength(tupleCtx))
-
-	res := make([]tensor.Tensor, tupleLength)
-	for ii := 0; ii < tupleLength; ii++ {
-		tensr := tensorCtxToTensor(C.Torch_TupleElement(tupleCtx, ii))
-		res[ii] = tensr
-	}
-
-	return res, nil
+	C.free(unsafe.Pointer(p.inputs))
 }
 
 func (p *Predictor) finalize() {
-	if p.ctx == nil {
-		return
+	p.freeInputs()
+	if p.ctx != nil {
+		C.Torch_PredictorDelete(p.ctx)
 	}
-	C.Torch_PredictorDelete(p.ctx)
 	p.ctx = nil
 }
 

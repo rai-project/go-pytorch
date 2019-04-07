@@ -1,3 +1,4 @@
+#ifdef ENABLE_PYTROCH_JIT
 
 #include <algorithm>
 #include <iosfwd>
@@ -22,43 +23,43 @@ struct Torch_JITModule_Method {
 };
 
 Torch_JITModuleContext Torch_CompileTorchScript(char* cstring_script, Torch_Error* error) {
-  HANDLE_TH_ERRORS
+  HANDLE_TH_ERRORS(Torch_GlobalError);
   std::string script(cstring_script);
   auto mod = new Torch_JITModule();
   mod->module = torch::jit::compile(script);
 
   return (void*)mod;
-  END_HANDLE_TH_ERRORS(error, NULL)
+  END_HANDLE_TH_ERRORS(Torch_GlobalError, NULL)
 }
 
 Torch_JITModuleContext Torch_LoadJITModule(char* cstring_path, Torch_Error* error) {
-  HANDLE_TH_ERRORS
+  HANDLE_TH_ERRORS(Torch_GlobalError);
   std::string module_path(cstring_path);
   auto mod = new Torch_JITModule();
   mod->module = torch::jit::load(module_path);
 
   return (void*)mod;
-  END_HANDLE_TH_ERRORS(error, NULL)
+  END_HANDLE_TH_ERRORS(Torch_GlobalError, NULL)
 }
 
 void Torch_ExportJITModule(Torch_JITModuleContext ctx, char* cstring_path, Torch_Error* error) {
-  HANDLE_TH_ERRORS
+  HANDLE_TH_ERRORS(Torch_GlobalError);
   std::string module_path(cstring_path);
   auto mod = (Torch_JITModule*)ctx;
   mod->module->save(module_path);
-  END_HANDLE_TH_ERRORS(error, )
+  END_HANDLE_TH_ERRORS(Torch_GlobalError, )
 }
 
 Torch_JITModuleMethodContext Torch_JITModuleGetMethod(Torch_JITModuleContext ctx, char* cstring_method,
                                                       Torch_Error* error) {
-  HANDLE_TH_ERRORS
+  HANDLE_TH_ERRORS(Torch_GlobalError);
   std::string method_name(cstring_method);
   auto mod = (Torch_JITModule*)ctx;
 
   auto met = new Torch_JITModule_Method{mod->module->get_method(method_name)};
 
   return (void*)met;
-  END_HANDLE_TH_ERRORS(error, NULL)
+  END_HANDLE_TH_ERRORS(Torch_GlobalError, NULL)
 }
 
 char** Torch_JITModuleGetMethodNames(Torch_JITModuleContext ctx, size_t* len) {
@@ -83,7 +84,7 @@ char** Torch_JITModuleGetMethodNames(Torch_JITModuleContext ctx, size_t* len) {
 
 Torch_IValue Torch_JITModuleMethodRun(Torch_JITModuleMethodContext ctx, Torch_IValue* inputs, size_t input_size,
                                       Torch_Error* error) {
-  HANDLE_TH_ERRORS
+  HANDLE_TH_ERRORS(Torch_GlobalError);
   auto met = (Torch_JITModule_Method*)ctx;
 
   std::vector<torch::IValue> inputs_vec;
@@ -95,7 +96,7 @@ Torch_IValue Torch_JITModuleMethodRun(Torch_JITModuleMethodContext ctx, Torch_IV
 
   auto res = met->run(inputs_vec);
   return Torch_ConvertIValueToTorchIValue(res);
-  END_HANDLE_TH_ERRORS(error, Torch_IValue{})
+  END_HANDLE_TH_ERRORS(Torch_GlobalError, Torch_IValue{})
 }
 
 Torch_ModuleMethodArgument* Torch_JITModuleMethodArguments(Torch_JITModuleMethodContext ctx, size_t* res_size) {
@@ -159,3 +160,4 @@ void Torch_DeleteJITModule(Torch_JITModuleContext ctx) {
   auto mod = (Torch_JITModule*)ctx;
   delete mod;
 }
+#endif  // ENABLE_PYTROCH_JIT
