@@ -232,6 +232,7 @@ const int*GetPredictionSizesPytorch(PredictorContext pred) {
     return nullptr;
   }
   int num_tensors = predictor->result_tensors.size();
+  std::cout << "No of tensors - " << num_tensors << std::endl;
   std::vector<int> size_of_tensors;
   size_of_tensors.reserve(num_tensors);
   for(int i=0; i < num_tensors; i++) {
@@ -251,10 +252,15 @@ const float*GetPredictionsPytorch(PredictorContext pred) {
   if (predictor == nullptr) {
     return nullptr;
   }
+  std::cout << "I am here - 1!" << std::endl;
   const int* size_of_tensors = GetPredictionSizesPytorch(pred);
+  for(int i=0; i<2;i++) std::cout << "size of tensor[" << i << "] - " << size_of_tensors[i] << std::endl;
+  std::cout << "I am here - 2!" << std::endl;
   int total_size_of_tensors = 0;
-  for(int i=0; i < predictor->result_tensors.size(); i++) 
+  for(int i=0; i < predictor->result_tensors.size(); i++) {
+    std::cout << "size of tensor " << i << " : " << size_of_tensors[i]; 
     total_size_of_tensors += size_of_tensors[i];  
+  }
   float* combined = new float[total_size_of_tensors];
   for(size_t i = 0; i < predictor->result_tensors.size(); i++) {
     std::copy(predictor->result_tensors[i].data<float>(), predictor->result_tensors[i].data<float>() + size_of_tensors[i], combined);

@@ -3,20 +3,20 @@ package main
 import "C"
 
 import (
-	//"bufio"
+	"bufio"
 	"context"
 	"fmt"
 	"image"
 	"os"
 	"path/filepath"
-	//"sort"
+	"sort"
 
 	"github.com/anthonynsimon/bild/imgio"
 	"github.com/anthonynsimon/bild/transform"
 	"github.com/k0kubun/pp"
 	"github.com/rai-project/config"
-	//"github.com/rai-project/dlframework"
-	//"github.com/rai-project/dlframework/framework/feature"
+	"github.com/rai-project/dlframework"
+	"github.com/rai-project/dlframework/framework/feature"
 	"github.com/rai-project/dlframework/framework/options"
 	"github.com/rai-project/downloadmanager"
 	"github.com/rai-project/go-pytorch"
@@ -135,54 +135,53 @@ func main() {
 		panic(err)
 	}
 
-	/*
-		output, err := predictor.ReadPredictionOutput(ctx)
-		if err != nil {
-			panic(err)
+	output, err := predictor.ReadPredictionOutput(ctx)
+	if err != nil {
+		panic(err)
+	}
+
+	var labels []string
+	f, err := os.Open(synset)
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		line := scanner.Text()
+		labels = append(labels, line)
+	}
+
+	features := make([]dlframework.Features, batchSize)
+	featuresLen := len(output) / batchSize
+
+	for ii := 0; ii < batchSize; ii++ {
+		rprobs := make([]*dlframework.Feature, featuresLen)
+		for jj := 0; jj < featuresLen; jj++ {
+			rprobs[jj] = feature.New(
+				feature.ClassificationIndex(int32(jj)),
+				feature.ClassificationLabel(labels[jj]),
+				feature.Probability(output[ii*featuresLen+jj]),
+			)
 		}
+		sort.Sort(dlframework.Features(rprobs))
+		features[ii] = rprobs
+	}
 
-		var labels []string
-		f, err := os.Open(synset)
-		if err != nil {
-			panic(err)
+	if true {
+		for i := 0; i < 1; i++ {
+			results := features[i]
+			top1 := results[0]
+			pp.Println(top1.Probability)
+			pp.Println(top1.GetClassification().GetLabel())
+
+			top2 := results[1]
+			pp.Println(top2.Probability)
+			pp.Println(top2.GetClassification().GetLabel())
 		}
-		defer f.Close()
-		scanner := bufio.NewScanner(f)
-		for scanner.Scan() {
-			line := scanner.Text()
-			labels = append(labels, line)
-		}
-
-		features := make([]dlframework.Features, batchSize)
-		featuresLen := len(output) / batchSize
-
-		for ii := 0; ii < batchSize; ii++ {
-			rprobs := make([]*dlframework.Feature, featuresLen)
-			for jj := 0; jj < featuresLen; jj++ {
-				rprobs[jj] = feature.New(
-					feature.ClassificationIndex(int32(jj)),
-					feature.ClassificationLabel(labels[jj]),
-					feature.Probability(output[ii*featuresLen+jj]),
-				)
-			}
-			sort.Sort(dlframework.Features(rprobs))
-			features[ii] = rprobs
-		}
-
-		if true {
-			for i := 0; i < 1; i++ {
-				results := features[i]
-				top1 := results[0]
-				pp.Println(top1.Probability)
-				pp.Println(top1.GetClassification().GetLabel())
-
-				top2 := results[1]
-				pp.Println(top2.Probability)
-				pp.Println(top2.GetClassification().GetLabel())
-			}
-		} else {
-			_ = features
-		}*/
+	} else {
+		_ = features
+	}
 
 	// INFO
 	pp.Println("End of prediction...")
