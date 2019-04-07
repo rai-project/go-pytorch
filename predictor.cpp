@@ -9,6 +9,11 @@
 #include <type_traits>
 #include <utility>
 #include <vector>
+<<<<<<< HEAD
+=======
+#include <iostream>
+#include <typeinfo>
+>>>>>>> master
 
 #include <../../autograd/profiler.h>
 #include <torch/script.h>
@@ -41,12 +46,11 @@ class StartProfile {
     if (prof_ == nullptr || net_ == nullptr) {
       return;
     }
-    // TODO  start autograd profiler
   }
 
  private:
   profile *prof_{nullptr};
-  const shared_ptr<torch::jit::script::Module> net_{nullptr};
+  std::shared_ptr<torch::jit::script::Module> net_{nullptr};
 };
 
 class EndProfile {
@@ -59,7 +63,6 @@ class EndProfile {
     if (prof_ == nullptr) {
       return;
     }
-    // TODO end autograd profiler
   }
 
  private:
@@ -68,86 +71,111 @@ class EndProfile {
 
 class Predictor {
  public:
-  Predictor(const string &model_file, int batch, torch::DeviceType mode);
-
-  template <typename T>
-  void AddInput(int ii, T *inputData);
-
-  void Predict();
+  Predictor(const string &model_file, int batch, DeviceKind device);
+  void Predict(float *inputData);
 
   std::shared_ptr<torch::jit::script::Module> net_;
-  std::vector<std::vector<int>> shapes_{};
-
+  int width_, height_, channels_;
   int batch_;
-
   int pred_len_;
   torch::DeviceType mode_{torch::kCPU};
   profile *prof_{nullptr};
+  std::stringstream ss_;
+  std::string filename{"profile.trace"};
   bool profile_enabled_{false};
   at::Tensor result_;
-
-  std::vector<torch::jit::IValue> inputs_{};
+  std::vector<at::Tensor> result_tensors;
 };
 
-Predictor::Predictor(const string &model_file, int batch,
-                     torch::DeviceType mode) {
-  /* Load the network. */
-  // In pytorch, a loaded module in c++ is given
-  // type torch::jit::script::Module as it has been
-  // ported from python/c++ via pytorch's JIT compiler
+Predictor::Predictor(const string &model_file, int batch, DeviceKind device) {
+  // Load the network
   net_ = torch::jit::load(model_file);
   assert(net_ != nullptr);
-  mode_ = mode;
-
-  // TODO should fetch width and height from model
-  // const torch::detail::OrderedDict<std::string,
-  // torch::jit::script::NamedModule>& net_module_dict = net_->get_modules();
-  // size_t net_module_dict_size = net_module_dict.size();
-  // CHECK((int)net_module_dict_size == 1) << "Number of modules - " <<
-  // (int)net_module_dict_size; const torch::jit::script::NamedModule& temp =
-  // net_module_dict.get("fc1"); temp.module->get_method("fc1_script");
-
-  // Input shape hard coded for now due to absence of layer shape through API
-  // TODO Preferred alternative: pass input layer shape as an input
-  width_ = 224;
-  height_ = 224;
-  channels_ = 3;
+  if (device == CUDA_DEVICE_KIND) mode_ = torch::kCUDA;
   batch_ = batch;
+  // if (device == CUDA_DEVICE_KIND)
+  // autograd::profiler::enableProfiler(autograd::profiler::ProfilerState::NVTX);
 }
 
-template <typename T>
-void Predictor::AddInput(int index, T *inputData, int *sizes, int sizeLen) {
-  std::vector<int> shape(sizeLen, sizes);
-  shapes_.emplace_back(shape);
+auto options = at::dtype<T>();
 
-  //   at::TensorOptions options;
-  // #define SET_TYPE(ty, top, _) \
-//   if (std::is_same<T, ty>::value) options = at::ty;
-  //   AT_FORALL_SCALAR_TYPES(SET_TYPE);
-  // #undef SET_TYPE
+std::vector<int64_t> sizes = {batch_, channels_, width_, height_};
+at::TensorOptions options(at::kFloat);
+at::Tensor tensor_image =
+    torch::from_blob(inputData, at::IntList(sizes), options);
 
-  auto options = at::dtype<T>();
+std::vector<torch::jit::IValue> inputs;
+if (mode_ == torch::kCUDA) {
+  net_->to(at::kCUDA);
+  at::Tensor tensor_image_cuda = tensor_image.to(at::kCUDA);
+  inputs.emplace_back(tensor_image_cuda);
 
-  at::Tensor tensor_image =
-      torch::from_blob(inputData, at::IntList(shape), options);
+  if (profile_enabled_) {
+    {
+      autograd::profiler::RecordProfile guard(filename);
+      auto temp = net_->forward(inputs);
 
-  StartProfile *start_profile = nullptr;
-  EndProfile *end_profile = nullptr;
-  if (prof_ != nullptr && profile_enabled_ == false) {
-    start_profile = new StartProfile(prof_, net_);
-    end_profile = new EndProfile(prof_);
-    profile_enabled_ = true;
-  }
+      if (temp.isTensor()) {
+        result_tensors.push_back(temp.toTensor());
+      } else if (temp.isTuple()) {
+        auto elems = temp.toTuple()->elements();
+        for (size_t i = 0; i < elems.size(); i++)
+          result_tensors.push_back(elems[i].toTensor());
+      } else {
+        std::cout << "ERROR: Neither a Tensor nor a Tuple!" << std::endl;
+      }
+    }
 
-  std::vector<torch::jit::IValue> inputs;
-  if (mode_ == torch::kCUDA) {
-    net_->to(at::kCUDA);
-    at::Tensor tensor_image_cuda = tensor_image.to(at::kCUDA);
-    inputs.emplace_back(tensor_image_cuda);
   } else {
-    // emplace IValue input
-    inputs.emplace_back(tensor_image);
+    auto temp = net_->forward(inputs);
+
+    if (temp.isTensor()) {
+      result_tensors.emplace_back(temp.toTensor());
+    } else if (temp.isTuple()) {
+      auto elems = temp.toTuple()->elements();
+      for (size_t i = 0; i < elems.size(); i++)
+        result_tensors.emplace_back(elems[i].toTensor());
+    } else {
+      std::cout << "ERROR: Neither a Tensor nor a Tuple!" << std::endl;
+    }
   }
+
+} else {
+  inputs.emplace_back(tensor_image);
+  if (profile_enabled_) {
+    {
+      autograd::profiler::RecordProfile guard(filename);
+      auto temp = net_->forward(inputs);
+
+      if (temp.isTensor()) {
+        result_tensors.emplace_back(temp.toTensor());
+      } else if (temp.isTuple()) {
+        auto elems = temp.toTuple()->elements();
+        for (size_t i = 0; i < elems.size(); i++)
+          result_tensors.emplace_back(elems[i].toTensor());
+      } else {
+        std::cout << "ERROR: Neither a Tensor nor a Tuple!" << std::endl;
+      }
+    }
+
+  } else {
+    auto temp = net_->forward(inputs);
+
+    if (temp.isTensor()) {
+      result_tensors.emplace_back(temp.toTensor());
+    } else if (temp.isTuple()) {
+      auto elems = temp.toTuple()->elements();
+      for (size_t i = 0; i < elems.size(); i++) {
+        result_tensors.emplace_back(elems[i].toTensor());
+      }
+    } else {
+      std::cout << "ERROR: Neither a Tensor nor a Tuple!" << std::endl;
+    }
+  }
+}
+
+for (size_t i = 0; i < result_tensors.size(); i++) {
+  result_tensors[i] = result_tensors[i].to(at::kCPU);
 }
 
 void Predictor::Predict() {
@@ -158,12 +186,9 @@ void Predictor::Predict() {
 
 PredictorContext NewPytorch(char *model_file, int batch, int mode) {
   try {
-    torch::DeviceType mode_temp{at::kCPU};
-    if (mode == 1) {
-      mode_temp = at::kCUDA;
-    }
-    const auto ctx =
-        new Predictor(model_file, batch, (torch::DeviceType)mode_temp);
+    DeviceKind device_temp{CPU_DEVICE_KIND};
+    if (mode == 1) device_temp = CUDA_DEVICE_KIND;
+    const auto ctx = new Predictor(model_file, batch, (DeviceKind)device_temp);
     return (void *)ctx;
   } catch (const std::invalid_argument &ex) {
     LOG(ERROR) << "exception: " << ex.what();
@@ -174,8 +199,7 @@ PredictorContext NewPytorch(char *model_file, int batch, int mode) {
 
 void SetModePytorch(int mode) {
   if (mode == 1) {
-    // TODO set device here ?
-    torch::Device device(torch::kCUDA);
+    // mode_ = torch::kCUDA;
   }
 }
 
@@ -190,13 +214,57 @@ void PredictPytorch(PredictorContext pred, float *inputData) {
   return;
 }
 
+const int GetNumberofTensorsPytorch(PredictorContext pred) {
+  auto predictor = (Predictor *)pred;
+  if (predictor == nullptr) {
+    return 0;
+  }
+  return predictor->result_tensors.size();
+}
+
+// returns int array of individual tensor sizes
+const int *GetPredictionSizesPytorch(PredictorContext pred) {
+  auto predictor = (Predictor *)pred;
+  if (predictor == nullptr) {
+    return nullptr;
+  }
+  int num_tensors = predictor->result_tensors.size();
+  std::cout << "No of tensors - " << num_tensors << std::endl;
+  std::vector<int> size_of_tensors;
+  size_of_tensors.reserve(num_tensors);
+  for (int i = 0; i < num_tensors; i++) {
+    int num_dims = predictor->result_tensors[i].sizes().size();
+    int length = 1;
+    for (int j = 0; j < num_dims; j++)
+      length *= predictor->result_tensors[i].sizes().data()[j];
+    size_of_tensors.emplace_back(length);
+  }
+  return size_of_tensors.data();
+}
+
 const float *GetPredictionsPytorch(PredictorContext pred) {
   auto predictor = (Predictor *)pred;
   if (predictor == nullptr) {
     return nullptr;
   }
-
-  return predictor->result_.data<float>();
+  std::cout << "I am here - 1!" << std::endl;
+  const int *size_of_tensors = GetPredictionSizesPytorch(pred);
+  for (int i = 0; i < 2; i++)
+    std::cout << "size of tensor[" << i << "] - " << size_of_tensors[i]
+              << std::endl;
+  std::cout << "I am here - 2!" << std::endl;
+  int total_size_of_tensors = 0;
+  for (int i = 0; i < predictor->result_tensors.size(); i++) {
+    std::cout << "size of tensor " << i << " : " << size_of_tensors[i];
+    total_size_of_tensors += size_of_tensors[i];
+  }
+  float *combined = new float[total_size_of_tensors];
+  for (size_t i = 0; i < predictor->result_tensors.size(); i++) {
+    std::copy(predictor->result_tensors[i].data<float>(),
+              predictor->result_tensors[i].data<float>() + size_of_tensors[i],
+              combined);
+  }
+  return combined;
 }
 
 void DeletePytorch(PredictorContext pred) {
@@ -236,12 +304,24 @@ int GetChannelsPytorch(PredictorContext pred) {
   return predictor->channels_;
 }
 
+void SetDimensionsPytorch(PredictorContext pred, int channels, int height,
+                          int width, int batch) {
+  auto predictor = (Predictor *)pred;
+  if (predictor == nullptr) {
+    return;
+  }
+  predictor->channels_ = channels;
+  predictor->height_ = height;
+  predictor->width_ = width;
+  predictor->batch_ = batch;
+}
+
 int GetPredLenPytorch(PredictorContext pred) {
   auto predictor = (Predictor *)pred;
   if (predictor == nullptr) {
     return 0;
   }
-  predictor->pred_len_ = predictor->result_.size(1);
+  // predictor->pred_len_ = predictor->result_.size(1);
   return predictor->pred_len_;
 }
 
@@ -274,6 +354,14 @@ void EndProfilingPytorch(PredictorContext pred) {
   }
 }
 
+void EnableProfilingPytorch(PredictorContext pred) {
+  auto predictor = (Predictor *)pred;
+  if (predictor == nullptr) {
+    return;
+  }
+  predictor->profile_enabled_ = true;
+}
+
 void DisableProfilingPytorch(PredictorContext pred) {
   auto predictor = (Predictor *)pred;
   if (predictor == nullptr) {
@@ -282,17 +370,23 @@ void DisableProfilingPytorch(PredictorContext pred) {
   if (predictor->prof_) {
     predictor->prof_->reset();
   }
+  predictor->profile_enabled_ = false;
 }
 
-char *ReadProfilePyTorch(PredictorContext pred) {
-  auto predictor = (Predictor * pred);
-  if (predictor == nullptr) {
-    return strdup("");
+char *ReadProfilePytorch(PredictorContext pred) {
+  try {
+    auto predictor = (Predictor *)pred;
+    if (predictor == nullptr) {
+      return strdup("");
+    }
+    if (predictor->prof_ == nullptr) {
+      return strdup("");
+    }
+    const auto prof_output = predictor->ss_.str().c_str();
+    return strdup(prof_output);
+  } catch (std::exception &ex) {
+    LOG(ERROR) << "exception: catch all [ " << ex.what() << "]"
+               << "\n";
+    return nullptr;
   }
-  if (predictor->prof_ == nullptr) {
-    return strdup("");
-  }
-  const auto s = predictor->prof_->read();
-  const auto cstr = s.c_str();
-  return strdup(cstr);
 }

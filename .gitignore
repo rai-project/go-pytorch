@@ -8,6 +8,8 @@ cifar-test-leveldb
 
 *.nvprof
 .vscode
-
-batch
-single
+vendor
+builtin_models/*.pt
+example/batch/profile.trace
+example/object_detection/profile.trace
+example/object_detection/*.pt

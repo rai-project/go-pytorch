@@ -9,7 +9,10 @@ extern "C" {
 
 typedef void *PredictorContext;
 
-PredictorContext NewPytorch(char *model_file, int batch, int mode);
+typedef enum { CPU_DEVICE_KIND = 0, CUDA_DEVICE_KIND = 1 } DeviceKind;
+
+PredictorContext NewPytorch(char *model_file, int batch,
+                          int mode);
 
 void SetModePytorch(int mode);
 
@@ -20,8 +23,11 @@ void AddFloat32PytorchPrediction(PredictorContext pred, int ii,
 void AddFloat64PytorchPrediction(PredictorContext pred, int ii,
                                  double *inputData);
 
-const float *GetFloat32PredictionsPytorch(PredictorContext pred, int ii);
-const double *GetFloat64PredictionsPytorch(PredictorContext pred, int ii);
+const int GetNumberofTensorsPytorch(PredictorContext pred);
+
+const int *GetPredictionSizesPytorch(PredictorContext pred);
+
+const float *GetPredictionsPytorch(PredictorContext pred);
 
 void DeletePytorch(PredictorContext pred);
 
@@ -31,7 +37,19 @@ int GetHeightPytorch(PredictorContext pred);
 
 int GetChannelsPytorch(PredictorContext pred);
 
+void SetDimensionsPytorch(PredictorContext pred, int channels, int height, int width, int batch);
+
 int GetPredLenPytorch(PredictorContext pred);
+
+void StartProfilingPytorch(PredictorContext pred, const char *name, const char *metadata);
+
+void EndProfilingPytorch(PredictorContext pred);
+
+void EnableProfilingPytorch(PredictorContext pred);
+
+void DisableProfilingPytorch(PredictorContext pred);
+
+char *ReadProfilePytorch(PredictorContext pred);
 
 #ifdef __cplusplus
 }
