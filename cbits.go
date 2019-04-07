@@ -106,18 +106,38 @@ func (p *Predictor) ReadPredictionOutput(ctx context.Context) ([]float32, error)
 	defer span.Finish()
 
 	batchSize := p.options.BatchSize()
-	predLen := int(C.GetPredLenPytorch(p.ctx))
-	length := batchSize * predLen
+	//predLen := int(C.GetPredLenPytorch(p.ctx))
+	//length := batchSize * predLen
+	cSizes := C.GetPredictionSizesPytorch(p.ctx)
+	if cSizes == nil {
+		return nil, errors.New("empty sizes")
+	}
+
+	cNumOfSizes := C.GetNumberofTensorsPytorch(p.ctx)
+	if cNumOfSizes == nil {
+		return nil, errors.New("empty num of sizes")
+	}
 
 	cPredictions := C.GetPredictionsPytorch(p.ctx)
 	if cPredictions == nil {
 		return nil, errors.New("empty predictions")
 	}
 
-	slice := (*[1 << 30]float32)(unsafe.Pointer(cPredictions))[:length:length]
-	pp.Println(slice[:2])
+	// TODO create variable number of slices = O(cNumOfSizes)
+	// creating <= 2 as of now
+	slice_sizes := (*[1 << 30]int32)(unsafe.Pointer(cSizes))[:cNumOfSizes]
+	slice_0 := (*[1 << 30]float32)(unsafe.Pointer(cPredictions))[0:slice_sizes[:1]]
+	pp.Println(slice_0[:2])
+	if cNumOfSizes >= 2 {
+		slice_1 := (*[1 << 30]float32)(unsafe.Pointer(cPredictions))[(slice_sizes)[:1]:(slice_sizes)[1:2]]
+		pp.Println(slice_1[:2])
+	}
 
-	return slice, nil
+	//slice := (*[1 << 30]float32)(unsafe.Pointer(cPredictions))[:length:length]
+	//pp.Println(slice[:2])
+
+	// TODO returning first slices for now
+	return slice_0, nil
 }
 
 func (p *Predictor) Close() {

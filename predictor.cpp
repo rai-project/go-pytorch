@@ -214,14 +214,52 @@ void PredictPytorch(PredictorContext pred, float* inputData) {
 
 }
 
+const int GetNumberofTensorsPytorch(PredictorContext pred) {
+  
+  auto predictor = (Predictor *)pred;
+  if (predictor == nullptr) {
+    return 0;
+  }
+  return predictor->result_tensors.size();
+
+}
+
+// returns int array of individual tensor sizes
+const int*GetPredictionSizesPytorch(PredictorContext pred) {
+
+  auto predictor = (Predictor *)pred;
+  if (predictor == nullptr) {
+    return nullptr;
+  }
+  int num_tensors = predictor->result_tensors.size();
+  std::vector<int> size_of_tensors;
+  size_of_tensors.reserve(num_tensors);
+  for(int i=0; i < num_tensors; i++) {
+    int num_dims = predictor->result_tensors[i].sizes().size();
+    int length = 1;
+    for(int j = 0; j < num_dims; j++)
+      length *= predictor->result_tensors[i].sizes().data()[j];
+    size_of_tensors.emplace_back(length);
+  }
+  return size_of_tensors.data(); 
+}
+
+
 const float*GetPredictionsPytorch(PredictorContext pred) {
 
   auto predictor = (Predictor *)pred;
   if (predictor == nullptr) {
     return nullptr;
   }
-
-  return predictor->result_.data<float>();
+  const int* size_of_tensors = GetPredictionSizesPytorch(pred);
+  int total_size_of_tensors = 0;
+  for(int i=0; i < predictor->result_tensors.size(); i++) 
+    total_size_of_tensors += size_of_tensors[i];  
+  float* combined = new float[total_size_of_tensors];
+  for(size_t i = 0; i < predictor->result_tensors.size(); i++) {
+    std::copy(predictor->result_tensors[i].data<float>(), predictor->result_tensors[i].data<float>() + size_of_tensors[i], combined);
+  }
+  return combined;
 
 }
 
@@ -289,7 +327,7 @@ int GetPredLenPytorch(PredictorContext pred) {
   if (predictor == nullptr) {
     return 0;
   }
-  predictor->pred_len_ = predictor->result_.size(1);
+  //predictor->pred_len_ = predictor->result_.size(1);
   return predictor->pred_len_;
 
 }

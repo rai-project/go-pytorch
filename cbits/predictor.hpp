@@ -20,6 +20,10 @@ void InitPytorch();
 
 void PredictPytorch(PredictorContext pred, float *inputData);
 
+const int GetNumberofTensorsPytorch(PredictorContext pred);
+
+const int *GetPredictionSizesPytorch(PredictorContext pred);
+
 const float *GetPredictionsPytorch(PredictorContext pred);
 
 void DeletePytorch(PredictorContext pred);
