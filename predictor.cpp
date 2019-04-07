@@ -24,6 +24,8 @@
 using namespace torch;
 using std::string;
 
+extern Torch_IValue Torch_ConvertIValueToTorchIValue(torch::IValue value);
+
 class Predictor {
  public:
   Predictor(const string &model_file, int batch, DeviceKind device);
@@ -31,13 +33,13 @@ class Predictor {
 
   std::shared_ptr<torch::jit::script::Module> net_;
   std::vector<torch::jit::IValue> inputs_;
+  torch::jit::IValue output_;
   torch::DeviceType mode_{torch::kCPU};
   profile *prof_{nullptr};
   std::stringstream ss_;
   std::string profile_filename_{"profile.trace"};
   bool profile_enabled_{false};
   at::Tensor result_;
-  std::vector<at::Tensor> result_tensors;
 };
 
 Predictor::Predictor(const string &model_file, int batch, DeviceKind device) {
@@ -72,85 +74,53 @@ void Predictor::Predict() {
 }
 
 PredictorContext Torch_NewPredictor(char *model_file, int batch, int mode) {
-  try {
-    DeviceKind device_temp{CPU_DEVICE_KIND};
-    if (mode == 1) device_temp = CUDA_DEVICE_KIND;
-    const auto ctx = new Predictor(model_file, batch, (DeviceKind)device_temp);
-    return (void *)ctx;
-  } catch (const std::invalid_argument &ex) {
-    LOG(ERROR) << "exception: " << ex.what();
-    errno = EINVAL;
-    return nullptr;
-  }
+  HANDLE_TH_ERRORS
+  DeviceKind device_temp{CPU_DEVICE_KIND};
+  if (mode == 1) device_temp = CUDA_DEVICE_KIND;
+  const auto ctx = new Predictor(model_file, batch, (DeviceKind)device_temp);
+  return (void *)ctx;
+  END_HANDLE_TH_ERRORS(error, nullptr);
 }
 
-void Torch_PredictorSetMode(int mode) {
-  if (mode == 1) {
-    // mode_ = torch::kCUDA;
-  }
-}
+void Torch_PredictorSetMode(Torch_DeviceKind mode) { mode_ = mode; }
 
 void InitPytorch() {}
 
 void Torch_PredictorRun(PredictorContext pred, float *inputData) {
+  HANDLE_TH_ERRORS
   auto predictor = (Predictor *)pred;
   if (predictor == nullptr) {
     return;
   }
   predictor->Predict(inputData);
-  return;
+  END_HANDLE_TH_ERRORS(error, );
 }
 
 const int Torch_PredictorNumOutputs(PredictorContext pred) {
+  HANDLE_TH_ERRORS
   auto predictor = (Predictor *)pred;
   if (predictor == nullptr) {
     return 0;
   }
-  return predictor->result_tensors.size();
+  return predictor->result_tensors_.size();
+  END_HANDLE_TH_ERRORS(error, 0);
 }
 
-// returns int array of individual tensor sizes
-const int *Torch_PredictorOutput(PredictorContext pred) {
+Torch_IValue Torch_PredictorGetOutput(PredictorContext pred) {
+  HANDLE_TH_ERRORS
   auto predictor = (Predictor *)pred;
   if (predictor == nullptr) {
     return nullptr;
   }
-  int num_tensors = predictor->result_tensors.size();
-  std::cout << "No of tensors - " << num_tensors << std::endl;
-  std::vector<int> size_of_tensors;
-  size_of_tensors.reserve(num_tensors);
-  for (int i = 0; i < num_tensors; i++) {
-    int num_dims = predictor->result_tensors[i].sizes().size();
-    int length = 1;
-    for (int j = 0; j < num_dims; j++) length *= predictor->result_tensors[i].sizes().data()[j];
-    size_of_tensors.emplace_back(length);
-  }
-  return size_of_tensors.data();
-}
 
-const float *GetPredictionsPytorch(PredictorContext pred) {
-  auto predictor = (Predictor *)pred;
-  if (predictor == nullptr) {
-    return nullptr;
-  }
-  std::cout << "I am here - 1!" << std::endl;
-  const int *size_of_tensors = Torch_PredictorOutput(pred);
-  for (int i = 0; i < 2; i++) std::cout << "size of tensor[" << i << "] - " << size_of_tensors[i] << std::endl;
-  std::cout << "I am here - 2!" << std::endl;
-  int total_size_of_tensors = 0;
-  for (int i = 0; i < predictor->result_tensors.size(); i++) {
-    std::cout << "size of tensor " << i << " : " << size_of_tensors[i];
-    total_size_of_tensors += size_of_tensors[i];
-  }
-  float *combined = new float[total_size_of_tensors];
-  for (size_t i = 0; i < predictor->result_tensors.size(); i++) {
-    std::copy(predictor->result_tensors[i].data<float>(),
-              predictor->result_tensors[i].data<float>() + size_of_tensors[i], combined);
-  }
-  return combined;
+  output_ = output_.to(at::kCPU);
+  return Torch_ConvertIValueToTorchIValue(output_);
+
+  END_HANDLE_TH_ERRORS(error, Torch_IValue{});
 }
 
 void Torch_PredictorDelete(PredictorContext pred) {
+  HANDLE_TH_ERRORS
   auto predictor = (Predictor *)pred;
   if (predictor == nullptr) {
     return;
@@ -161,13 +131,5 @@ void Torch_PredictorDelete(PredictorContext pred) {
     predictor->prof_ = nullptr;
   }
   delete predictor;
-}
-
-int GetPredLenPytorch(PredictorContext pred) {
-  auto predictor = (Predictor *)pred;
-  if (predictor == nullptr) {
-    return 0;
-  }
-  // predictor->pred_len_ = predictor->result_.size(1);
-  return predictor->pred_len_;
+  END_HANDLE_TH_ERRORS(error, );
 }

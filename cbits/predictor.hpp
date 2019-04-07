@@ -80,11 +80,9 @@ void Torch_PredictorRun(PredictorContext pred);
 
 const int Torch_PredictorNumOutputs(PredictorContext pred);
 
-Torch_TensorContext Torch_PredictorGetOutput(PredictorContext pred, int ii);
+Torch_TensorContext Torch_PredictorGetOutput(PredictorContext pred);
 
 void Torch_PredictorDelete(PredictorContext pred);
-
-// Tensor
 
 // Tensor
 Torch_TensorContext Torch_NewTensor(void* data, int64_t* dimensions, int n_dim, Torch_DataType dtype);

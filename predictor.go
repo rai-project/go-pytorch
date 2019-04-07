@@ -7,21 +7,15 @@ import "C"
 import (
 	"context"
 	"fmt"
+	"runtime"
 	"unsafe"
 
 	"github.com/Unknwon/com"
-	"github.com/k0kubun/pp"
 	"github.com/pkg/errors"
 	"github.com/rai-project/dlframework/framework/options"
 	nvidiasmi "github.com/rai-project/nvidia-smi"
 	"github.com/rai-project/tracer"
-)
-
-type Device int
-
-const (
-	CPUDevice  Device = Device(C.CPU_DEVICE_KIND)
-	CUDADevice        = Device(C.CUDA_DEVICE_KIND)
+	"gorgonia.org/tensor"
 )
 
 type Predictor struct {
@@ -39,22 +33,26 @@ func New(ctx context.Context, opts ...options.Option) (*Predictor, error) {
 		return nil, errors.Errorf("file %s not found", modelFile)
 	}
 
-	device := CPUDevice
+	device := CPUDeviceKind
 	if options.UsesGPU() {
 		if !nvidiasmi.HasGPU {
 			return nil, errors.New("no GPU device")
 		}
-		device = CUDADevice
+		device = CUDADeviceKind
 	}
 
-	return &Predictor{
+	pred := &Predictor{
 		ctx: C.Torch_NewPredictor(
 			C.CString(modelFile),
 			C.int(options.BatchSize()),
-			C.int(device),
+			device,
 		),
 		options: options,
-	}, nil
+	}
+
+	runtime.SetFinalizer(pred, (*Predictor).finalize)
+
+	return pred, nilf
 }
 
 func SetUseCPU() {
@@ -77,13 +75,6 @@ func (p *Predictor) Predict(ctx context.Context, data []float32, dims []int) err
 
 	batchSize := p.options.BatchSize()
 
-	// dims = [len(gotensors), Shape[0] == height, Shape[1] == width, Shape[2] == channels]
-	dataLen := dims[0]
-	height := dims[1]
-	width := dims[2]
-	channels := dims[3]
-	C.SetDimensionsPytorch(p.ctx, C.int(channels), C.int(height), C.int(width), C.int(batchSize))
-
 	shapeLen := int(channels * width * height)
 	inputCount := dataLen / shapeLen
 	if batchSize > inputCount {
@@ -101,45 +92,55 @@ func (p *Predictor) Predict(ctx context.Context, data []float32, dims []int) err
 	return nil
 }
 
-func (p *Predictor) ReadPredictionOutput(ctx context.Context) ([]float32, error) {
+func (p *Predictor) ReadPredictionOutput(ctx context.Context) ([]tensor.Tensor, error) {
 	span, _ := tracer.StartSpanFromContext(ctx, tracer.MODEL_TRACE, "c_read_predicted_output")
 	defer span.Finish()
 
-	//batchSize := p.options.BatchSize()
-	//predLen := int(C.GetPredLenPytorch(p.ctx))
-	//length := batchSize * predLen
-	cSizes := C.Torch_PredictorOutput(p.ctx)
-	if cSizes == nil {
-		return nil, errors.New("empty sizes")
-	}
-
-	cNumOfSizes := C.Torch_PredictorNumOutputs(p.ctx)
+	cNumOutputs := int(C.Torch_PredictorNumOutputs(p.ctx))
 	if cNumOfSizes == 0 {
 		return nil, errors.New("zero number of tensors")
 	}
 
-	cPredictions := C.GetPredictionsPytorch(p.ctx)
+	cPredictions := C.Torch_PredictorGetOutput(p.ctx)
 	if cPredictions == nil {
 		return nil, errors.New("empty predictions")
 	}
 
-	// TODO create variable number of slices = O(cNumOfSizes)
-	// creating <= 2 as of now
-	slice_sizes := (*[1 << 30]int32)(unsafe.Pointer(cSizes))[:cNumOfSizes]
-	slice_0 := (*[1 << 30]float32)(unsafe.Pointer(cPredictions))[:slice_sizes[0]]
-	pp.Println(slice_0[:2])
-	/*if cNumOfSizes >= 2 {
-		slice_1 := (*[1 << 30]float32)(unsafe.Pointer(cPredictions))[(slice_sizes)[:1]:(slice_sizes)[1:2]]
-		pp.Println(slice_1[:2])
-	}*/
+	if cPredictions.itype == C.Torch_IValueTypeTensor {
+		tensorCtx := (*C.Torch_TensorContext)(&cPredictions.data_ptr)
+		tensor := createTensor(
+			C.Torch_TensorValue(tensorCtx),
+			C.Torch_TensorShape(tensorCtx),
+			C.Torch_TensorType(predictionTensor),
+		)
+		return tensor, nil
+	}
 
-	//slice := (*[1 << 30]float32)(unsafe.Pointer(cPredictions))[:length:length]
-	//pp.Println(slice[:2])
+	// // TODO create variable number of slices = O(cNumOfSizes)
+	// // creating <= 2 as of now
+	// slice_sizes := (*[1 << 30]int32)(unsafe.Pointer(cSizes))[:cNumOfSizes]
+	// slice_0 := (*[1 << 30]float32)(unsafe.Pointer(cPredictions))[:slice_sizes[0]]
+	// pp.Println(slice_0[:2])
+	// /*if cNumOfSizes >= 2 {
+	// 	slice_1 := (*[1 << 30]float32)(unsafe.Pointer(cPredictions))[(slice_sizes)[:1]:(slice_sizes)[1:2]]
+	// 	pp.Println(slice_1[:2])
+	// }*/
 
-	// TODO returning first slices for now
-	return slice_0, nil
+	// //slice := (*[1 << 30]float32)(unsafe.Pointer(cPredictions))[:length:length]
+	// //pp.Println(slice[:2])
+
+	// // TODO returning first slices for now
+	return nil, nil
+}
+
+func (p *Predictor) finalize() {
+	if p.ctx == nil {
+		return
+	}
+	C.Torch_PredictorDelete(p.ctx)
+	p.ctx = nil
 }
 
 func (p *Predictor) Close() {
-	C.Torch_PredictorDelete(p.ctx)
+	p.finalize()
 }

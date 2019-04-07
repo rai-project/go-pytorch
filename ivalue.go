@@ -9,10 +9,9 @@ package pytorch
 //
 import "C"
 import (
-	"runtime"
+	"fmt"
 	"unsafe"
 )
-
 
 func convertIValueTupleToTuple(tuple *C.Torch_IValueTuple) (Tuple, error) {
 	valuesSlice := (*[1 << 30]C.Torch_IValue)(unsafe.Pointer(tuple.values))[:tuple.length:tuple.length]
@@ -38,7 +37,7 @@ func convertGoValueToIValue(val interface{}) (C.Torch_IValue, error) {
 			data_ptr: unsafe.Pointer(v.context),
 		}, nil
 	case Tuple:
-		tuple := (*C.Torch_IValueTuple)(C.malloc((C.size_t)C.size_of_ivalue_tuple))
+		tuple := (*C.Torch_IValueTuple)(C.malloc((C.size_t)(C.size_of_ivalue_tuple)))
 		tuple.values = (*C.Torch_IValue)(C.malloc(C.size_of_ivalue * C.ulong(len(v))))
 		tuple.length = C.ulong(len(v))
 

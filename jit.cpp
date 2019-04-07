@@ -11,6 +11,8 @@
 #include "error.hpp"
 #include "predictor.hpp"
 
+extern Torch_IValue Torch_ConvertIValueToTorchIValue(torch::IValue value);
+
 struct Torch_JITModule {
   std::shared_ptr<torch::jit::script::Module> module;
 };
