@@ -13,7 +13,7 @@ import (
 	"github.com/k0kubun/pp"
 	"github.com/pkg/errors"
 	"github.com/rai-project/dlframework/framework/options"
-	"github.com/rai-project/nvidia-smi"
+	nvidiasmi "github.com/rai-project/nvidia-smi"
 	"github.com/rai-project/tracer"
 )
 
@@ -39,16 +39,16 @@ func New(ctx context.Context, opts ...options.Option) (*Predictor, error) {
 		return nil, errors.Errorf("file %s not found", modelFile)
 	}
 
-	device := C.DeviceKind(CPUDevice)
+	device := CPUDevice
 	if options.UsesGPU() {
 		if !nvidiasmi.HasGPU {
 			return nil, errors.New("no GPU device")
 		}
-		device = C.DeviceKind(CUDADevice)
+		device = CUDADevice
 	}
 
 	return &Predictor{
-		ctx: C.NewPytorch(
+		ctx: C.Torch_NewPredictor(
 			C.CString(modelFile),
 			C.int(options.BatchSize()),
 			C.int(device),
@@ -58,11 +58,11 @@ func New(ctx context.Context, opts ...options.Option) (*Predictor, error) {
 }
 
 func SetUseCPU() {
-	C.SetModePytorch(C.int(0))
+	C.Torch_PredictorSetMode(C.int(0))
 }
 
 func SetUseGPU() {
-	C.SetModePytorch(C.int(1))
+	C.Torch_PredictorSetMode(C.int(1))
 }
 
 func init() {
@@ -96,7 +96,7 @@ func (p *Predictor) Predict(ctx context.Context, data []float32, dims []int) err
 	predictSpan, _ := tracer.StartSpanFromContext(ctx, tracer.MODEL_TRACE, "c_predict")
 	defer predictSpan.Finish()
 
-	C.PredictPytorch(p.ctx, ptr)
+	C.Torch_PredictorRun(p.ctx, ptr)
 
 	return nil
 }
@@ -108,12 +108,12 @@ func (p *Predictor) ReadPredictionOutput(ctx context.Context) ([]float32, error)
 	//batchSize := p.options.BatchSize()
 	//predLen := int(C.GetPredLenPytorch(p.ctx))
 	//length := batchSize * predLen
-	cSizes := C.GetPredictionSizesPytorch(p.ctx)
+	cSizes := C.Torch_PredictorOutput(p.ctx)
 	if cSizes == nil {
 		return nil, errors.New("empty sizes")
 	}
 
-	cNumOfSizes := C.GetNumberofTensorsPytorch(p.ctx)
+	cNumOfSizes := C.Torch_PredictorNumOutputs(p.ctx)
 	if cNumOfSizes == 0 {
 		return nil, errors.New("zero number of tensors")
 	}
@@ -141,40 +141,5 @@ func (p *Predictor) ReadPredictionOutput(ctx context.Context) ([]float32, error)
 }
 
 func (p *Predictor) Close() {
-	C.DeletePytorch(p.ctx)
-}
-
-func (p *Predictor) StartProfiling(name, metadata string) error {
-	cname := C.CString(name)
-	cmetadata := C.CString(metadata)
-	defer C.free(unsafe.Pointer(cname))
-	defer C.free(unsafe.Pointer(cmetadata))
-	C.StartProfilingPytorch(p.ctx, cname, cmetadata)
-	return nil
-
-}
-
-func (p *Predictor) EndProfiling() error {
-	C.EndProfilingPytorch(p.ctx)
-	return nil
-}
-
-func (p *Predictor) EnableProfiling() error {
-	C.EnableProfilingPytorch(p.ctx)
-	return nil
-}
-
-func (p *Predictor) DisableProfiling() error {
-	C.DisableProfilingPytorch(p.ctx)
-	return nil
-}
-
-func (p *Predictor) ReadProfile() (string, error) {
-	cstr := C.ReadProfilePytorch(p.ctx)
-	if cstr == nil {
-		return "", errors.New("failed to read nil profile")
-	}
-	defer C.free(unsafe.Pointer(cstr))
-	return C.GoString(cstr), nil
-
+	C.Torch_PredictorDelete(p.ctx)
 }
