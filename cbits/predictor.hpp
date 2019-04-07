@@ -19,12 +19,6 @@
 extern "C" {
 #endif  // __cplusplus
 
-typedef void* PredictorContext;
-
-typedef void* Torch_TensorContext;
-typedef void* Torch_JITModuleContext;
-typedef void* Torch_JITModuleMethodContext;
-
 typedef enum Torch_DataType {
   Torch_Unknown = 0,
   Torch_Byte = 1,
@@ -66,23 +60,40 @@ typedef struct Torch_Error {
 
 typedef enum { CPU_DEVICE_KIND = 0, CUDA_DEVICE_KIND = 1 } Torch_DeviceKind;
 
+typedef void* Torch_PredictorContext;
+typedef Torch_IValueTuple* Torch_TupleContext;
+typedef void* Torch_TensorContext;
+typedef void* Torch_JITModuleContext;
+typedef void* Torch_JITModuleMethodContext;
+
 void InitPytorch();
 
 // Predictor
 
-PredictorContext Torch_NewPredictor(char* model_file, int batch, int mode);
+Torch_PredictorContext Torch_NewPredictor(char* model_file, int batch, int mode);
 
 void Torch_PredictorSetMode(int mode);
 
-void Torch_PredictorAddInput(PredictorContext pred, Torch_DataType ty, void* data);
+void Torch_PredictorAddInput(Torch_PredictorContext pred, Torch_DataType ty, void* data);
 
-void Torch_PredictorRun(PredictorContext pred);
+void Torch_PredictorRun(Torch_PredictorContext pred);
 
-const int Torch_PredictorNumOutputs(PredictorContext pred);
+const int Torch_PredictorNumOutputs(Torch_PredictorContext pred);
 
-Torch_TensorContext Torch_PredictorGetOutput(PredictorContext pred);
+Torch_IValue Torch_PredictorGetOutput(Torch_PredictorContext pred);
 
-void Torch_PredictorDelete(PredictorContext pred);
+void Torch_PredictorDelete(Torch_PredictorContext pred);
+
+// IValue
+
+void Torch_IValueDelete(Torch_IValue val);
+
+// Tuple
+
+int Torch_TupleLength(Torch_TupleContext tup);
+Torch_TensorContext Torch_TupleElement(Torch_TupleContext tup, int elem);
+
+void Torch_TupleDelete(Torch_TupleContext tup);
 
 // Tensor
 Torch_TensorContext Torch_NewTensor(void* data, int64_t* dimensions, int n_dim, Torch_DataType dtype);
@@ -91,16 +102,18 @@ Torch_DataType Torch_TensorType(Torch_TensorContext ctx);
 int64_t* Torch_TensorShape(Torch_TensorContext ctx, size_t* dims);
 void Torch_DeleteTensor(Torch_TensorContext ctx);
 
+void Torch_PrintTensors(Torch_TensorContext* tensors, size_t input_size);
+
 // Profile
-void StartProfilingPytorch(PredictorContext pred, const char* name, const char* metadata);
+void StartProfilingPytorch(Torch_PredictorContext pred, const char* name, const char* metadata);
 
-void EndProfilingPytorch(PredictorContext pred);
+void EndProfilingPytorch(Torch_PredictorContext pred);
 
-void EnableProfilingPytorch(PredictorContext pred);
+void EnableProfilingPytorch(Torch_PredictorContext pred);
 
-void DisableProfilingPytorch(PredictorContext pred);
+void DisableProfilingPytorch(Torch_PredictorContext pred);
 
-char* ReadProfilePytorch(PredictorContext pred);
+char* ReadProfilePytorch(Torch_PredictorContext pred);
 
 // JIT
 Torch_JITModuleContext Torch_CompileTorchScript(char* script, Torch_Error* error);

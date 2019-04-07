@@ -108,3 +108,26 @@ func tensorCtxToTensor(ctx C.Torch_TensorContext) tensor.Tensor {
 		panic("invalid data type")
 	}
 }
+
+func ivalueToTensor(ctx C.Torch_IValue) []tensor.Tensor {
+	if ctx.itype == C.Torch_IValueTypeTensor {
+		tensorCtx := (*C.Torch_TensorContext)(&cPredictions.data_ptr)
+		tensr := tensorCtxToTensor(tensorCtx)
+		return []tensor.Tensor{tensr}
+	}
+
+	if ctx.itype != C.Torch_IValueTypeTuple {
+		panic("expecting a C.Torch_IValueTypeTuple type")
+	}
+
+	tupleCtx := (*C.Torch_TupleContext)(&cPredictions.data_ptr)
+	tupleLength := int(C.Torch_TupleLength(tupleCtx))
+
+	res := []tensor.Tensor{}
+	for ii := 0; ii < tupleLength; ii++ {
+		ival := ivalueToTensor(C.Torch_TupleElement(tupleCtx, ii))
+		res[ii] = append(res, ival...)
+	}
+
+	return res, nil
+}

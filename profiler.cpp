@@ -15,7 +15,7 @@
 #include "timer.h"
 #include "timer.impl.hpp"
 
-void StartProfilingPytorch(PredictorContext pred, const char *name, const char *metadata) {
+void StartProfilingPytorch(Torch_PredictorContext pred, const char *name, const char *metadata) {
   auto predictor = (Predictor *)pred;
   if (predictor == nullptr) {
     return;
@@ -33,7 +33,7 @@ void StartProfilingPytorch(PredictorContext pred, const char *name, const char *
   }
 }
 
-void EndProfilingPytorch(PredictorContext pred) {
+void EndProfilingPytorch(Torch_PredictorContext pred) {
   auto predictor = (Predictor *)pred;
   if (predictor == nullptr) {
     return;
@@ -43,7 +43,7 @@ void EndProfilingPytorch(PredictorContext pred) {
   }
 }
 
-void EnableProfilingPytorch(PredictorContext pred) {
+void EnableProfilingPytorch(Torch_PredictorContext pred) {
   auto predictor = (Predictor *)pred;
   if (predictor == nullptr) {
     return;
@@ -51,7 +51,7 @@ void EnableProfilingPytorch(PredictorContext pred) {
   predictor->profile_enabled_ = true;
 }
 
-void DisableProfilingPytorch(PredictorContext pred) {
+void DisableProfilingPytorch(Torch_PredictorContext pred) {
   auto predictor = (Predictor *)pred;
   if (predictor == nullptr) {
     return;
@@ -62,7 +62,7 @@ void DisableProfilingPytorch(PredictorContext pred) {
   predictor->profile_enabled_ = false;
 }
 
-char *ReadProfilePytorch(PredictorContext pred) {
+char *ReadProfilePytorch(Torch_PredictorContext pred) {
   try {
     auto predictor = (Predictor *)pred;
     if (predictor == nullptr) {

@@ -19,7 +19,7 @@ import (
 )
 
 type Predictor struct {
-	ctx     C.PredictorContext
+	ctx     C.Torch_PredictorContext
 	options *options.Options
 }
 
@@ -56,15 +56,11 @@ func New(ctx context.Context, opts ...options.Option) (*Predictor, error) {
 }
 
 func SetUseCPU() {
-	C.Torch_PredictorSetMode(C.int(0))
+	C.Torch_PredictorSetMode(CPUDeviceKind)
 }
 
 func SetUseGPU() {
-	C.Torch_PredictorSetMode(C.int(1))
-}
-
-func init() {
-	C.InitPytorch()
+	C.Torch_PredictorSetMode(CUDADeviceKind)
 }
 
 func (p *Predictor) Predict(ctx context.Context, data []float32, dims []int) error {
@@ -106,31 +102,28 @@ func (p *Predictor) ReadPredictionOutput(ctx context.Context) ([]tensor.Tensor, 
 		return nil, errors.New("empty predictions")
 	}
 
+	defer C.Torch_IValueDelete(cPredictions)
+
 	if cPredictions.itype == C.Torch_IValueTypeTensor {
 		tensorCtx := (*C.Torch_TensorContext)(&cPredictions.data_ptr)
-		tensor := createTensor(
-			C.Torch_TensorValue(tensorCtx),
-			C.Torch_TensorShape(tensorCtx),
-			C.Torch_TensorType(predictionTensor),
-		)
-		return tensor, nil
+		tensr := tensorCtxToTensor(tensorCtx)
+		return []tensor.Tensor{tensr}, nil
 	}
 
-	// // TODO create variable number of slices = O(cNumOfSizes)
-	// // creating <= 2 as of now
-	// slice_sizes := (*[1 << 30]int32)(unsafe.Pointer(cSizes))[:cNumOfSizes]
-	// slice_0 := (*[1 << 30]float32)(unsafe.Pointer(cPredictions))[:slice_sizes[0]]
-	// pp.Println(slice_0[:2])
-	// /*if cNumOfSizes >= 2 {
-	// 	slice_1 := (*[1 << 30]float32)(unsafe.Pointer(cPredictions))[(slice_sizes)[:1]:(slice_sizes)[1:2]]
-	// 	pp.Println(slice_1[:2])
-	// }*/
+	if cPredictions.itype != C.Torch_IValueTypeTuple {
+		return nil, errors.New("expecting a C.Torch_IValueTypeTuple type")
+	}
 
-	// //slice := (*[1 << 30]float32)(unsafe.Pointer(cPredictions))[:length:length]
-	// //pp.Println(slice[:2])
+	tupleCtx := (*C.Torch_TupleContext)(&cPredictions.data_ptr)
+	tupleLength := int(C.Torch_TupleLength(tupleCtx))
 
-	// // TODO returning first slices for now
-	return nil, nil
+	res := make([]tensor.Tensor, tupleLength)
+	for ii := 0; ii < tupleLength; ii++ {
+		tensr := tensorCtxToTensor(C.Torch_TupleElement(tupleCtx, ii))
+		res[ii] = tensr
+	}
+
+	return res, nil
 }
 
 func (p *Predictor) finalize() {
@@ -143,4 +136,8 @@ func (p *Predictor) finalize() {
 
 func (p *Predictor) Close() {
 	p.finalize()
+}
+
+func init() {
+	C.InitPytorch()
 }

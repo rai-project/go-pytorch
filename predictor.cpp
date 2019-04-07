@@ -73,7 +73,7 @@ void Predictor::Predict() {
   result_ = net_->forward(inputs_);
 }
 
-PredictorContext Torch_NewPredictor(char *model_file, int batch, int mode) {
+Torch_PredictorContext Torch_NewPredictor(char *model_file, int batch, int mode) {
   HANDLE_TH_ERRORS
   DeviceKind device_temp{CPU_DEVICE_KIND};
   if (mode == 1) device_temp = CUDA_DEVICE_KIND;
@@ -86,7 +86,7 @@ void Torch_PredictorSetMode(Torch_DeviceKind mode) { mode_ = mode; }
 
 void InitPytorch() {}
 
-void Torch_PredictorRun(PredictorContext pred, float *inputData) {
+void Torch_PredictorRun(Torch_PredictorContext pred, float *inputData) {
   HANDLE_TH_ERRORS
   auto predictor = (Predictor *)pred;
   if (predictor == nullptr) {
@@ -96,7 +96,7 @@ void Torch_PredictorRun(PredictorContext pred, float *inputData) {
   END_HANDLE_TH_ERRORS(error, );
 }
 
-const int Torch_PredictorNumOutputs(PredictorContext pred) {
+const int Torch_PredictorNumOutputs(Torch_PredictorContext pred) {
   HANDLE_TH_ERRORS
   auto predictor = (Predictor *)pred;
   if (predictor == nullptr) {
@@ -106,7 +106,7 @@ const int Torch_PredictorNumOutputs(PredictorContext pred) {
   END_HANDLE_TH_ERRORS(error, 0);
 }
 
-Torch_IValue Torch_PredictorGetOutput(PredictorContext pred) {
+Torch_IValue Torch_PredictorGetOutput(Torch_PredictorContext pred) {
   HANDLE_TH_ERRORS
   auto predictor = (Predictor *)pred;
   if (predictor == nullptr) {
@@ -119,7 +119,7 @@ Torch_IValue Torch_PredictorGetOutput(PredictorContext pred) {
   END_HANDLE_TH_ERRORS(error, Torch_IValue{});
 }
 
-void Torch_PredictorDelete(PredictorContext pred) {
+void Torch_PredictorDelete(Torch_PredictorContext pred) {
   HANDLE_TH_ERRORS
   auto predictor = (Predictor *)pred;
   if (predictor == nullptr) {
