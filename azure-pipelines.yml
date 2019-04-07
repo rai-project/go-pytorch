@@ -1,6 +1,7 @@
 
 jobs:
 - job: CPU
+  timeoutInMinutes: 0
   steps:
   - bash: |
      docker login -u $(DOCKER_USERNAME) -p $(DOCKER_PASSWORD)
@@ -8,6 +9,7 @@ jobs:
      make docker_build_cpu
      make docker_push_cpu
 - job: GPU
+  timeoutInMinutes: 0
   steps:
   - bash: |
      docker login -u $(DOCKER_USERNAME) -p $(DOCKER_PASSWORD)
