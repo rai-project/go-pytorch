@@ -2,7 +2,7 @@
 #define __PREDICTOR_HPP__
 
 // TODO need to add a check - if in docker, comment it
-#define _GLIBCXX_USE_CXX11_ABI 0
+//#define _GLIBCXX_USE_CXX11_ABI 0
 
 #include <stddef.h>
 #include <stdint.h>
