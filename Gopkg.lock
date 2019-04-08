@@ -326,6 +326,14 @@
   version = "v0.0.1"
 
 [[projects]]
+  digest = "0:"
+  name = "github.com/google/flatbuffers"
+  packages = ["go"]
+  pruneopts = "UT"
+  revision = "c0698cc33f1e534bb59c455909b88cc2726089af"
+  version = "v1.10.0"
+
+[[projects]]
   digest = "1:f1f70abea1ab125d48396343b4c053f8fecfbdb943037bf3d29dc80c90fe60b3"
   name = "github.com/googleapis/gax-go"
   packages = ["v2"]
@@ -1113,16 +1121,18 @@
   version = "v2.2.2"
 
 [[projects]]
-  digest = "1:1a5f77d65bc51cead709d03d5f27ddc44e8b63ace054f9fbd84966f4283cee2e"
+  digest = "0:"
   name = "gorgonia.org/tensor"
   packages = [
     ".",
     "internal/execution",
+    "internal/serialization/fb",
+    "internal/serialization/pb",
     "internal/storage",
   ]
   pruneopts = "UT"
-  revision = "2ab2564f998fe504b94a1679c1c95277cdedea47"
-  version = "v0.8.1"
+  revision = "8eeece33868236224d51e7362e36a68642870bd2"
+  version = "v0.9.0-beta"
 
 [[projects]]
   branch = "master"
