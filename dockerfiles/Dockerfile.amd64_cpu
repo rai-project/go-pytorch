@@ -67,6 +67,7 @@ RUN git clone --single-branch --depth=1 --recurse-submodules --branch=master htt
   -DCMAKE_INSTALL_PREFIX=$PYTORCH_DIST_DIR \
   -DBUILD_TORCH=ON \
   -DBUILD_SHARED_LIBS=ON \
+  -DCMAKE_CXX_FLAGS="-D_GLIBCXX_USE_CXX11_ABI=0" \
   -DUSE_OBSERVERS=ON \
   -DUSE_PROF=ON \
   -DBLAS=OpenBLAS \

@@ -28,10 +28,11 @@ import (
 	nvidiasmi "github.com/rai-project/nvidia-smi"
 	"github.com/rai-project/tracer"
 	_ "github.com/rai-project/tracer/all"
+	"gorgonia.org/tensor"
 )
 
 var (
-	batchSize  = 64
+	batchSize  = 1
 	model      = "alexnet"
 	graph_url  = "https://s3.amazonaws.com/store.carml.org/models/pytorch/alexnet.pt"
 	synset_url = "http://data.dmlc.ml/mxnet/models/imagenet/synset.txt"
@@ -103,16 +104,13 @@ func main() {
 		input = append(input, res...)
 	}
 
-	dims := append([]int{len(input)}, 224, 224, 3)
+	dims := []int{batchSize, 3, 224, 224}
 
 	opts := options.New()
 
 	device := options.CPU_DEVICE
 	if nvidiasmi.HasGPU {
-		pytorch.SetUseGPU()
 		device = options.CUDA_DEVICE
-	} else {
-		pytorch.SetUseCPU()
 	}
 
 	ctx := context.Background()
@@ -125,28 +123,29 @@ func main() {
 		options.WithOptions(opts),
 		options.Device(device, 0),
 		options.Graph([]byte(graph)),
-		options.BatchSize(batchSize))
+	)
 	if err != nil {
 		panic(err)
 	}
 	defer predictor.Close()
 
-	err = predictor.Predict(ctx, input, dims)
+	err = predictor.Predict(ctx, []tensor.Tensor{
+		tensor.New(
+			tensor.Of(tensor.Float32),
+			tensor.WithBacking(input),
+			tensor.WithShape(dims...),
+		),
+	})
 	if err != nil {
 		panic(err)
 	}
 
 	C.cudaProfilerStart()
 
-	err = predictor.Predict(ctx, input, dims)
-	if err != nil {
-		panic(err)
-	}
-
 	C.cudaDeviceSynchronize()
 	C.cudaProfilerStop()
 
-	output, err := predictor.ReadPredictionOutput(ctx)
+	outputs, err := predictor.ReadPredictionOutput(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -162,6 +161,8 @@ func main() {
 		line := scanner.Text()
 		labels = append(labels, line)
 	}
+
+	output := outputs[0].Data().([]float32)
 
 	features := make([]dlframework.Features, batchSize)
 	featuresLen := len(output) / batchSize
