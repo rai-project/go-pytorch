@@ -1,6 +1,6 @@
 package pytorch
 
-// #cgo CXXFLAGS: -std=c++14 -I${SRCDIR}/cbits -g
+// #cgo CXXFLAGS: -std=c++11 -I${SRCDIR}/cbits -g
 // #cgo CFLAGS: -I${SRCDIR}/cbits -O0 -Wall -Wno-unused-variable -Wno-deprecated-declarations -Wno-c++11-narrowing -g -Wno-sign-compare -Wno-unused-function
 // #cgo LDFLAGS: -lstdc++ -ltorch -lcaffe2 -lc10  -lglog
 // #cgo !python CXXFLAGS: -isystem /opt/libtorch/include

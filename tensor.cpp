@@ -138,11 +138,7 @@ Torch_TensorContext Torch_NewTensor(void* input_data, int64_t* dimensions, int n
   std::vector<int64_t> sizes;
   sizes.assign(dimensions, dimensions + n_dim);
 
-  if (device == CPU_DEVICE_KIND) {
-    options = options.device(torch::kCPU, 0);
-  } else if (device == CUDA_DEVICE_KIND) {
-    options = options.device(torch::kCUDA, 0);
-  }
+  //options = options.device(torch::kCPU, 0);
 
   torch::Tensor ten = torch::from_blob(input_data, torch::IntArrayRef(sizes), options);
 
