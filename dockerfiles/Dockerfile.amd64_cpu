@@ -60,7 +60,7 @@ RUN apt-get update && apt-get install -y sudo && rm -rf /var/lib/apt/lists/*
 # SOURCE INSTALLATION
 ENV PYTORCH_DIST_DIR /opt/libtorch
 
-RUN git clone --single-branch --depth=1 --recurse-submodules --branch=$FRAMEWORK_VERSION https://github.com/pytorch/pytorch.git && cd pytorch && \
+RUN git clone --single-branch --depth=1 --recurse-submodules --branch=master https://github.com/pytorch/pytorch.git && cd pytorch && \
   git submodule update --init && \
   mkdir build && cd build && \
   cmake .. \
@@ -104,7 +104,7 @@ ENV LD_LIBRARY_PATH /opt/libtorch/lib:${LD_LIBRARY_PATH}
 ENV PKG github.com/rai-project/go-pytorch
 WORKDIR $GOPATH/src/$PKG
 
-RUN git clone --depth=1 --single-branch --branch feature/abduld/modalities https://${PKG}.git . && \
+RUN git clone --depth=1 --single-branch --branch=master  https://${PKG}.git . && \
   dep ensure -vendor-only && \
   go install -a -tags=nogpu -installsuffix cgo -ldflags "-s -w -X ${PKG}/Version=${VERSION} -X ${PKG}/GitCommit=${VCS_REF} -X ${PKG}/BuildDate=${BUILD_DATE}"&& \
   rm -fr vendor

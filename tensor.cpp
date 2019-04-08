@@ -86,6 +86,10 @@ Torch_IValue Torch_ConvertIValueToTorchIValue(torch::IValue value) {
   if (value.isTensor()) {
     auto tensor = new Torch_Tensor();
     tensor->tensor = value.toTensor();
+
+  if (tensor->tensor.is_cuda()) {
+    tensor->tensor = tensor->tensor.to(at::kCPU);
+  }
     return Torch_IValue{
         .itype = Torch_IValueTypeTensor,
         .data_ptr = tensor,
