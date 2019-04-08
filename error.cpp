@@ -15,7 +15,12 @@ backward::SignalHandling sh;
 
 Torch_Error Torch_GlobalError{.message = nullptr};
 
-char Torch_HasError() { return Torch_GlobalError.message == nullptr ? 0 : 1; }
+char Torch_HasError() {
+  if (Torch_GlobalError.message == nullptr) {
+    return 0;
+  }
+  return 1;
+}
 
 const char* Torch_GetErrorString() {
   if (!Torch_HasError()) {

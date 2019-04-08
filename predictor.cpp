@@ -119,7 +119,6 @@ Torch_IValue Torch_PredictorGetOutput(Torch_PredictorContext pred) {
     return Torch_IValue{};
   }
 
-  // predictor->output_ = predictor->output_.to(at::kCPU);
   return Torch_ConvertIValueToTorchIValue(predictor->output_);
 
   END_HANDLE_TH_ERRORS(Torch_GlobalError, Torch_IValue{});

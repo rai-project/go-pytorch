@@ -99,14 +99,17 @@ func main() {
 	var input []float32
 	for ii := 0; ii < batchSize; ii++ {
 		resized := transform.Resize(img, 224, 224, transform.Linear)
-		res, err := cvtImageTo1DArray(resized, []float32{0.486, 0.456, 0.406}, []float32{0.229, 0.224, 0.225})
+		res, err := cvtImageTo1DArray(resized,
+			[]float32{0.486, 0.456, 0.406},
+			[]float32{0.229, 0.224, 0.225},
+		)
 		if err != nil {
 			panic(err)
 		}
 		input = append(input, res...)
 	}
 
-	dims := []int{batchSize, 224, 224, 3}
+	dims := []int{batchSize, 3, 224, 224}
 
 	opts := options.New()
 
@@ -145,12 +148,11 @@ func main() {
 
 	predictor.StartProfiling("predict", "")
 
-	pp.Println(dims)
 	err = predictor.Predict(ctx, []tensor.Tensor{
 		tensor.New(
 			tensor.Of(tensor.Float32),
-			tensor.WithShape(dims...),
 			tensor.WithBacking(input),
+			tensor.WithShape(dims...),
 		),
 	})
 	if err != nil {

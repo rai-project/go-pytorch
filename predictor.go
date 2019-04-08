@@ -56,7 +56,7 @@ func New(ctx context.Context, opts ...options.Option) (*Predictor, error) {
 
 	runtime.SetFinalizer(pred, (*Predictor).finalize)
 
-	return pred, nil
+	return pred, GetError()
 }
 
 func fromDevice(opts *options.Options) DeviceKind {
@@ -71,8 +71,6 @@ func fromDevice(opts *options.Options) DeviceKind {
 }
 
 func (p *Predictor) Predict(ctx context.Context, inputs []tensor.Tensor) error {
-	defer PanicOnError()
-
 	if len(inputs) < 1 {
 		return fmt.Errorf("input nil or empty")
 	}
@@ -93,12 +91,10 @@ func (p *Predictor) Predict(ctx context.Context, inputs []tensor.Tensor) error {
 
 	C.Torch_PredictorRun(p.ctx, &inputSlice[0], C.int(inputsLength))
 
-	return nil
+	return GetError()
 }
 
 func (p *Predictor) ReadPredictionOutput(ctx context.Context) ([]tensor.Tensor, error) {
-	defer PanicOnError()
-
 	span, _ := tracer.StartSpanFromContext(ctx, tracer.MODEL_TRACE, "c_read_predicted_output")
 	defer span.Finish()
 
@@ -114,10 +110,18 @@ func (p *Predictor) ReadPredictionOutput(ctx context.Context) ([]tensor.Tensor, 
 		return nil, errors.New("empty predictions")
 	}
 
-	return ivalueToTensor(cPredictions), nil
+	res := ivalueToTensor(cPredictions)
+	if err := GetError(); err != nil {
+		return nil, err
+	}
+
+	return res, nil
 }
 
 func (p *Predictor) finalize() {
+	if p == nil {
+		return
+	}
 	for _, input := range p.inputs {
 		C.Torch_DeleteTensor(input)
 	}

@@ -6,6 +6,8 @@ package pytorch
 import "C"
 import (
 	"unsafe"
+
+	"github.com/pkg/errors"
 )
 
 // Error errors returned by torch functions
@@ -29,11 +31,24 @@ func checkError(err C.Torch_Error) *Error {
 }
 
 func HasError() bool {
-	return int(C.Torch_HasError()) == 0
+	return int(C.Torch_HasError()) == 1
 }
 
 func GetErrorString() string {
-	return C.GoString(C.Torch_GetErrorString())
+	msg := C.Torch_GetErrorString()
+	if msg == nil {
+		return ""
+	}
+	return C.GoString(msg)
+}
+
+func GetError() error {
+	if !HasError() {
+		return nil
+	}
+	err := errors.New(GetErrorString())
+	ResetError()
+	return err
 }
 
 func ResetError() {

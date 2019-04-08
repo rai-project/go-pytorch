@@ -137,8 +137,6 @@ Torch_TensorContext Torch_NewTensor(void* input_data, int64_t* dimensions, int n
   std::vector<int64_t> sizes;
   sizes.assign(dimensions, dimensions + n_dim);
 
-  std::cout << "device = " << (int)device << "\n";
-
   if (device == CPU_DEVICE_KIND) {
     options = options.device(torch::kCPU, 0);
   } else if (device == CUDA_DEVICE_KIND) {
@@ -157,19 +155,24 @@ Torch_TensorContext Torch_NewTensor(void* input_data, int64_t* dimensions, int n
 }
 
 void* Torch_TensorValue(Torch_TensorContext ctx) {
-  auto tensor = (Torch_Tensor*)ctx;
-  return tensor->tensor.data_ptr();
+  auto tensor = reinterpret_cast<Torch_Tensor*>(ctx)->tensor;
+
+  if (tensor.is_cuda()) {
+    tensor = tensor.to(at::kCPU);
+  }
+
+  return tensor.data_ptr();
 }
 
 Torch_DataType Torch_TensorType(Torch_TensorContext ctx) {
-  auto tensor = (Torch_Tensor*)ctx;
-  auto type = tensor->tensor.scalar_type();
+  auto tensor = reinterpret_cast<Torch_Tensor*>(ctx)->tensor;
+  auto type = tensor.scalar_type();
   return Torch_ConvertScalarTypeToDataType(type);
 }
 
 int64_t* Torch_TensorShape(Torch_TensorContext ctx, size_t* dims) {
-  auto tensor = (Torch_Tensor*)ctx;
-  auto sizes = tensor->tensor.sizes();
+  auto tensor = reinterpret_cast<Torch_Tensor*>(ctx)->tensor;
+  auto sizes = tensor.sizes();
   *dims = sizes.size();
   return (int64_t*)sizes.data();
 }
@@ -177,8 +180,8 @@ int64_t* Torch_TensorShape(Torch_TensorContext ctx, size_t* dims) {
 void Torch_PrintTensors(Torch_TensorContext* tensors, size_t input_size) {
   for (int i = 0; i < input_size; i++) {
     auto ctx = tensors + i;
-    auto tensor = (Torch_Tensor*)*ctx;
-    std::cout << tensor->tensor << "\n";
+    auto tensor = reinterpret_cast<Torch_Tensor*>(ctx)->tensor;
+    std::cout << tensor << "\n";
   }
 }
 
