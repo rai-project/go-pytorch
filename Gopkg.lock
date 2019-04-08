@@ -163,6 +163,22 @@
   version = "v1.0.0"
 
 [[projects]]
+  digest = "1:7471447f18b90de5d6adfd51fe8ced6be2dc160d264ccbcd6fcefbd4b79f639e"
+  name = "github.com/chewxy/hm"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "61efb3290a086d1335e8954b3734c102126818ba"
+  version = "v1.0.0"
+
+[[projects]]
+  digest = "1:8f0ba1b6c0ae776c099ec6a91dd1e4fac5d671549ced9b99ec31d2463baa2d84"
+  name = "github.com/chewxy/math32"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "d1e7b22839c693f54edf7811dd9487623abf2cd2"
+  version = "v1.0.0"
+
+[[projects]]
   digest = "1:2e0b139b6281cf589fced9075f18a8a71ee877490220150ad68e040b48ce9160"
   name = "github.com/coreos/etcd"
   packages = [
@@ -840,6 +856,14 @@
   revision = "b2862e3d0a775f18c7cfe02273500ae307b61218"
 
 [[projects]]
+  branch = "master"
+  digest = "1:21561e8e085a2bae78f9007e13cb28afa946d3d4632ad69fe88a09923322c868"
+  name = "github.com/xtgo/set"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "708d80f4a27458f99f8ca12bd0e638c6ee65627f"
+
+[[projects]]
   digest = "1:9125b631bfde5e4ea592f98760562e89691a5c1d1625acfbfc9f85d37b0cc4d8"
   name = "go.opencensus.io"
   packages = [
@@ -953,6 +977,30 @@
   version = "v0.3.0"
 
 [[projects]]
+  branch = "master"
+  digest = "1:72a587690848e6d2f2ee26ac1629484645a20f650fe09bbb6bb3851eaff809dd"
+  name = "gonum.org/v1/gonum"
+  packages = [
+    "blas",
+    "blas/blas64",
+    "blas/cblas128",
+    "blas/gonum",
+    "floats",
+    "internal/asm/c128",
+    "internal/asm/c64",
+    "internal/asm/f32",
+    "internal/asm/f64",
+    "internal/cmplx64",
+    "internal/math32",
+    "lapack",
+    "lapack/gonum",
+    "lapack/lapack64",
+    "mat",
+  ]
+  pruneopts = "UT"
+  revision = "169ee079a3fcd6706a67702cf202192814167c28"
+
+[[projects]]
   digest = "1:c3122cc7545e8273cde2b1fccc37282903d65a99b1bbc0b1d7be138a020a96fc"
   name = "google.golang.org/api"
   packages = [
@@ -1064,6 +1112,34 @@
   revision = "51d6538a90f86fe93ac480b35f37b2be17fef232"
   version = "v2.2.2"
 
+[[projects]]
+  digest = "1:1a5f77d65bc51cead709d03d5f27ddc44e8b63ace054f9fbd84966f4283cee2e"
+  name = "gorgonia.org/tensor"
+  packages = [
+    ".",
+    "internal/execution",
+    "internal/storage",
+  ]
+  pruneopts = "UT"
+  revision = "2ab2564f998fe504b94a1679c1c95277cdedea47"
+  version = "v0.8.1"
+
+[[projects]]
+  branch = "master"
+  digest = "1:14385f8f0cca99c7f25522cd624acd442fb82dda1ff08f4c8aea47633a1dff9b"
+  name = "gorgonia.org/vecf32"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "a06d791a4e66be4d2fcae4530bb67afa232a0dae"
+
+[[projects]]
+  branch = "master"
+  digest = "1:acd87fab3987b69979ce8c4dbbc4610e64e28a6b95f6f72b6a262ba10ef5f6c5"
+  name = "gorgonia.org/vecf64"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "d21373a26cc12a37eaab0182a21d0225c3b7ef34"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
@@ -1084,6 +1160,7 @@
     "github.com/rai-project/tracer",
     "github.com/rai-project/tracer/all",
     "github.com/sirupsen/logrus",
+    "gorgonia.org/tensor",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1
