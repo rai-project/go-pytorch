@@ -8,9 +8,27 @@
 
 Download the relevant `LibTorch` pre-built binary available on [Pytorch website](https://pytorch.org). Note that we provide the option of profiling through pytorch's in-built autograd profiler. Incidentally, Pytorch C++ frontend does not have access to the autograd profiler as per release `1.0.1`. Kindly download nightly build post March 24th 2019 to enable the profiling. Without profiling, our codebase should be compatible with prior versions.
 
-### Build From Source 
+### Build From Source
 
 Kindly refer to `dockerfiles` to know how to build `LibTorch` from source. Note that one can also use `build_libtorch.py` script provided as part of the Pytorch repository to do the same.
+
+## Build From Source using PIP
+
+```
+pip3 install torch torchvision
+```
+
+or
+
+```
+conda install pytorch-nightly -c pytorch
+```
+
+then build using
+
+```
+go build -tags=nogpu -tags=python
+```
 
 ## Use Other Library Paths
 
@@ -56,3 +74,15 @@ You need GPU and CUDA to run this example. This example is to show how to use nv
 ```
 
 Refer to [Profiler User's Guide](https://docs.nvidia.com/cuda/profiler-users-guide/index.html) on how to use nvprof.
+
+## Debugging
+
+Build with the options `-gcflags "all=-N -l"` to disable inlining and optimizations.
+
+### For Darwin
+
+Go 1.11 started compressing debug information to reduce binary sizes. This is natively supported by Delve, but neither LLDB nor GDB support compressed debug info on macOS. If you are using LLDB or GDB, there are two workarounds: build binaries with `-ldflags=-compressdwarf=false`, or use `splitdwarf` (go get golang.org/x/tools/cmd/splitdwarf) to decompress the debug information in an existing binary.
+
+## Credits
+
+Parts of the implementation is borrowed from [orktes/go-torch](https://github.com/orktes/go-torch)

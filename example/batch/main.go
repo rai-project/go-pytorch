@@ -11,6 +11,8 @@ import (
 	"path/filepath"
 	"sort"
 
+	"github.com/Unknwon/com"
+
 	"github.com/anthonynsimon/bild/imgio"
 	"github.com/anthonynsimon/bild/transform"
 	"github.com/k0kubun/pp"
@@ -20,6 +22,8 @@ import (
 	"github.com/rai-project/dlframework/framework/options"
 	"github.com/rai-project/downloadmanager"
 	"github.com/rai-project/go-pytorch"
+	"gorgonia.org/tensor"
+
 	//cupti "github.com/rai-project/go-cupti"
 	nvidiasmi "github.com/rai-project/nvidia-smi"
 	"github.com/rai-project/tracer"
@@ -28,7 +32,7 @@ import (
 )
 
 var (
-	batchSize  = 64
+	batchSize  = 1
 	model      = "alexnet"
 	graph_url  = "https://s3.amazonaws.com/store.carml.org/models/pytorch/alexnet.pt"
 	synset_url = "http://s3.amazonaws.com/store.carml.org/synsets/imagenet/synset.txt"
@@ -65,12 +69,12 @@ func main() {
 	graph := filepath.Join(dir, "alexnet.pt")
 	synset := filepath.Join(dir, "synset.txt")
 
-	if _, err := os.Stat(graph); os.IsNotExist(err) {
+	if !com.IsFile(graph) {
 		if _, err := downloadmanager.DownloadInto(graph_url, dir); err != nil {
 			panic(err)
 		}
 	}
-	if _, err := os.Stat(synset); os.IsNotExist(err) {
+	if !com.IsFile(synset) {
 		if _, err := downloadmanager.DownloadInto(synset_url, dir); err != nil {
 			panic(err)
 		}
@@ -79,6 +83,8 @@ func main() {
 	// INFO
 	pp.Println("Model + Weights url - ", graph_url)
 	pp.Println("Labels url - ", synset_url)
+	pp.Println("Model + Weights path - ", graph)
+	pp.Println("Labels path - ", synset)
 
 	imgDir, _ := filepath.Abs("./_fixtures")
 	imagePath := filepath.Join(imgDir, "platypus.jpg")
@@ -93,23 +99,23 @@ func main() {
 	var input []float32
 	for ii := 0; ii < batchSize; ii++ {
 		resized := transform.Resize(img, 224, 224, transform.Linear)
-		res, err := cvtImageTo1DArray(resized, []float32{0.486, 0.456, 0.406}, []float32{0.229, 0.224, 0.225})
+		res, err := cvtImageTo1DArray(resized,
+			[]float32{0.486, 0.456, 0.406},
+			[]float32{0.229, 0.224, 0.225},
+		)
 		if err != nil {
 			panic(err)
 		}
 		input = append(input, res...)
 	}
 
-	dims := append([]int{len(input)}, 224, 224, 3)
+	dims := []int{batchSize, 3, 224, 224}
 
 	opts := options.New()
 
 	device := options.CPU_DEVICE
 	if nvidiasmi.HasGPU {
-		pytorch.SetUseGPU()
 		device = options.CUDA_DEVICE
-	} else {
-		pytorch.SetUseCPU()
 	}
 
 	ctx := context.Background()
@@ -122,7 +128,7 @@ func main() {
 		options.WithOptions(opts),
 		options.Device(device, 0),
 		options.Graph([]byte(graph)),
-		options.BatchSize(batchSize))
+	)
 	if err != nil {
 		panic(err)
 	}
@@ -142,7 +148,13 @@ func main() {
 
 	predictor.StartProfiling("predict", "")
 
-	err = predictor.Predict(ctx, input, dims)
+	err = predictor.Predict(ctx, []tensor.Tensor{
+		tensor.New(
+			tensor.Of(tensor.Float32),
+			tensor.WithBacking(input),
+			tensor.WithShape(dims...),
+		),
+	})
 	if err != nil {
 		panic(err)
 	}
@@ -166,7 +178,7 @@ func main() {
 	//}
 	//t.Publish(ctx, tracer.APPLICATION_TRACE)
 
-	output, err := predictor.ReadPredictionOutput(ctx)
+	outputs, err := predictor.ReadPredictionOutput(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -182,6 +194,8 @@ func main() {
 		line := scanner.Text()
 		labels = append(labels, line)
 	}
+
+	output := outputs[0].Data().([]float32)
 
 	features := make([]dlframework.Features, batchSize)
 	featuresLen := len(output) / batchSize
