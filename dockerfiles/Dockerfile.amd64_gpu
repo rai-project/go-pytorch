@@ -67,6 +67,7 @@ RUN git clone --single-branch --depth=1 --recurse-submodules --branch=master htt
   -DCMAKE_INSTALL_PREFIX=$PYTORCH_DIST_DIR \
   -DBUILD_TORCH=ON \
   -DBUILD_SHARED_LIBS=ON \
+  -DCMAKE_CXX_FLAGS="-D_GLIBCXX_USE_CXX11_ABI=0" \
   -DUSE_OBSERVERS=ON \
   -DUSE_PROF=ON \
   -DBLAS=OpenBLAS \
@@ -105,7 +106,7 @@ ENV LD_LIBRARY_PATH /opt/libtorch/lib:${LD_LIBRARY_PATH}
 ENV PKG github.com/rai-project/go-pytorch
 WORKDIR $GOPATH/src/$PKG
 
-RUN git clone --depth=1 --branch=master https://${PKG}.git . && \
+RUN git clone --depth=1 --single-branch --branch=master https://${PKG}.git . && \
   dep ensure -vendor-only && \
   go install -a -installsuffix cgo -ldflags "-s -w -X ${PKG}/Version=${VERSION} -X ${PKG}/GitCommit=${VCS_REF} -X ${PKG}/BuildDate=${BUILD_DATE}"&& \
   rm -fr vendor
