@@ -20,10 +20,10 @@ import (
 	"github.com/rai-project/dlframework/framework/options"
 	"github.com/rai-project/downloadmanager"
 	"github.com/rai-project/go-pytorch"
-	//cupti "github.com/rai-project/go-cupti"
 	//nvidiasmi "github.com/rai-project/nvidia-smi"
 	"github.com/rai-project/tracer"
 	_ "github.com/rai-project/tracer/all"
+	"gorgonia.org/tensor"
 	//"github.com/rai-project/tracer/ctimer"
 )
 
@@ -100,19 +100,14 @@ func main() {
 		input = append(input, res...)
 	}
 
-	dims := append([]int{len(input)}, 300, 300, 3)
+	dims := []int{batchSize, 3, 300, 300}
 
 	opts := options.New()
 
 	device := options.CPU_DEVICE
-	pytorch.SetUseCPU()
-	/*
-		if nvidiasmi.HasGPU {
-			pytorch.SetUseGPU()
-			device = options.CUDA_DEVICE
-		} else {
-			pytorch.SetUseCPU()
-		}*/
+	/*if nvidiasmi.HasGPU {
+		device = options.CUDA_DEVICE
+	}*/
 
 	ctx := context.Background()
 
@@ -124,18 +119,24 @@ func main() {
 		options.WithOptions(opts),
 		options.Device(device, 0),
 		options.Graph([]byte(graph)),
-		options.BatchSize(batchSize))
+	)
 	if err != nil {
 		panic(err)
 	}
 	defer predictor.Close()
 
-	err = predictor.Predict(ctx, input, dims)
+	err = predictor.Predict(ctx, []tensor.Tensor{
+		tensor.New(
+			tensor.Of(tensor.Float32),
+			tensor.WithBacking(input),
+			tensor.WithShape(dims...),
+		),
+	})
 	if err != nil {
 		panic(err)
 	}
 
-	output, err := predictor.ReadPredictionOutput(ctx)
+	outputs, err := predictor.ReadPredictionOutput(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -151,6 +152,8 @@ func main() {
 		line := scanner.Text()
 		labels = append(labels, line)
 	}
+
+	output := outputs[0].Data().([]float32)
 
 	features := make([]dlframework.Features, batchSize)
 	featuresLen := len(output) / batchSize
