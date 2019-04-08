@@ -19,17 +19,17 @@ type Tensor struct {
 }
 
 // NewTensor converts from a Go value to a Tensor. Valid values are scalars, slices, and arrays. Every element of a slice must have the same length so that the resulting Tensor has a valid shape.
-func NewTensor(value interface{}) (*Tensor, error) {
+func NewTensor(value interface{}, device DeviceKind) (*Tensor, error) {
 	val := reflect.ValueOf(value)
 	shape, dataType, err := shapeAndDataTypeOf(val)
 	if err != nil {
 		return nil, err
 	}
-	return NewTensorWithShape(value, shape, dataType)
+	return NewTensorWithShape(value, shape, dataType, device)
 }
 
 // NewTensorWithShape converts a single dimensional Go array or slice into a Tensor with given shape
-func NewTensorWithShape(value interface{}, shape []int64, dt DType) (*Tensor, error) {
+func NewTensorWithShape(value interface{}, shape []int64, dt DType, device DeviceKind) (*Tensor, error) {
 	nflattened := numElements(shape)
 	nbytes := typeOf(dt, nil).Size() * uintptr(nflattened)
 	dataPtr := unsafe.Pointer(C.malloc(C.size_t(nbytes)))
@@ -38,7 +38,7 @@ func NewTensorWithShape(value interface{}, shape []int64, dt DType) (*Tensor, er
 	buf := bytes.NewBuffer(dataSlice[:0:nbytes])
 	encodeTensor(buf, reflect.ValueOf(value), shape)
 
-	ctx := createTensor(dataPtr, shape, dt)
+	ctx := createTensor(dataPtr, shape, dt, device)
 	t := tensorWithContext(ctx)
 	t.goData = dataPtr
 
@@ -96,12 +96,12 @@ func (t *Tensor) finalize() {
 	}
 }
 
-func createTensor(ptr unsafe.Pointer, shape []int64, dtype DType) C.Torch_TensorContext {
+func createTensor(ptr unsafe.Pointer, shape []int64, dtype DType, device DeviceKind) C.Torch_TensorContext {
 	var shapePtr *C.int64_t
 	if len(shape) > 0 {
 		shapePtr = (*C.int64_t)(unsafe.Pointer(&shape[0]))
 	}
-	ctx := C.Torch_NewTensor(ptr, shapePtr, C.int(len(shape)), C.Torch_DataType(dtype))
+	ctx := C.Torch_NewTensor(ptr, shapePtr, C.int(len(shape)), C.Torch_DataType(dtype), C.Torch_DeviceKind(device))
 
 	runtime.KeepAlive(shape)
 	runtime.KeepAlive(ptr)

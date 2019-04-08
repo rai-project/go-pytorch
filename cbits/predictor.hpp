@@ -14,8 +14,8 @@
 #ifndef PROFILING_ENABLED
 #ifndef PROFILING_DISABLED
 // profiling is enabled only if you have the include file
-#if __has_include(<../../autograd/profiler.h>)
-#include <../../autograd/profiler.h>
+#if __has_include(<autograd/profiler.h>)
+#include <autograd/profiler.h>
 #define PROFILING_ENABLED 1
 #endif  //  __has_include(<../../autograd/profiler.h>)
 #endif  // PROFILING_DISABLED
@@ -74,7 +74,7 @@ typedef struct Torch_Error {
 
 extern Torch_Error Torch_GlobalError;
 
-typedef enum { CPU_DEVICE_KIND = 0, CUDA_DEVICE_KIND = 1 } Torch_DeviceKind;
+typedef enum { UNKNOWN_DEVICE_KIND = -1, CPU_DEVICE_KIND = 0, CUDA_DEVICE_KIND = 1 } Torch_DeviceKind;
 
 typedef void* Torch_PredictorContext;
 typedef Torch_IValueTuple* Torch_TupleContext;
@@ -117,7 +117,8 @@ Torch_IValue Torch_TupleElement(Torch_TupleContext tup, int elem);
 void Torch_TupleDelete(Torch_TupleContext tup);
 
 // Tensor
-Torch_TensorContext Torch_NewTensor(void* data, int64_t* dimensions, int n_dim, Torch_DataType dtype);
+Torch_TensorContext Torch_NewTensor(void* data, int64_t* dimensions, int n_dim, Torch_DataType dtype,
+                                    Torch_DeviceKind device);
 void* Torch_TensorValue(Torch_TensorContext ctx);
 Torch_DataType Torch_TensorType(Torch_TensorContext ctx);
 int64_t* Torch_TensorShape(Torch_TensorContext ctx, size_t* dims);

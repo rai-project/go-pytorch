@@ -21,10 +21,9 @@ import (
 )
 
 type Predictor struct {
-	ctx          C.Torch_PredictorContext
-	inputsLength int
-	inputs       *C.Torch_TensorContext
-	options      *options.Options
+	ctx     C.Torch_PredictorContext
+	inputs  []C.Torch_TensorContext
+	options *options.Options
 }
 
 func New(ctx context.Context, opts ...options.Option) (*Predictor, error) {
@@ -39,12 +38,9 @@ func New(ctx context.Context, opts ...options.Option) (*Predictor, error) {
 		return nil, errors.Errorf("file %s not found", modelFile)
 	}
 
-	device := CPUDeviceKind
-	if options.UsesGPU() {
-		if !nvidiasmi.HasGPU {
-			return nil, errors.New("no GPU device")
-		}
-		device = CUDADeviceKind
+	device := fromDevice(options)
+	if device == UnknownDeviceKind {
+		return nil, errors.New("invalid device")
 	}
 
 	cModelFile := C.CString(modelFile)
@@ -63,7 +59,18 @@ func New(ctx context.Context, opts ...options.Option) (*Predictor, error) {
 	return pred, nil
 }
 
-func (p *Predictor) Predict(ctx context.Context, inputs []*tensor.Dense) error {
+func fromDevice(opts *options.Options) DeviceKind {
+	device := CPUDeviceKind
+	if opts.UsesGPU() {
+		if !nvidiasmi.HasGPU {
+			return UnknownDeviceKind
+		}
+		device = CUDADeviceKind
+	}
+	return device
+}
+
+func (p *Predictor) Predict(ctx context.Context, inputs []tensor.Tensor) error {
 	defer PanicOnError()
 
 	if len(inputs) < 1 {
@@ -71,21 +78,20 @@ func (p *Predictor) Predict(ctx context.Context, inputs []*tensor.Dense) error {
 	}
 
 	inputsLength := len(inputs)
-	cInputs := (*C.Torch_TensorContext)(C.malloc(C.size_of_tensor_ctx * C.ulong(inputsLength)))
-
-	p.inputs = cInputs
-	p.inputsLength = inputsLength
-
-	inputSlice := (*[1 << 30]C.Torch_TensorContext)(unsafe.Pointer(cInputs))[:inputsLength:inputsLength]
+	inputSlice := make([]C.Torch_TensorContext, inputsLength)
 
 	for ii, input := range inputs {
-		inputSlice[ii] = toTensorCtx(input)
+		dense, ok := input.(*tensor.Dense)
+		if !ok {
+			return errors.New("expecting a dense tensor")
+		}
+		inputSlice[ii] = toTensorCtx(dense, fromDevice(p.options))
 	}
 
 	predictSpan, _ := tracer.StartSpanFromContext(ctx, tracer.MODEL_TRACE, "c_predict")
 	defer predictSpan.Finish()
 
-	C.Torch_PredictorRun(p.ctx, cInputs, C.int(inputsLength))
+	C.Torch_PredictorRun(p.ctx, &inputSlice[0], C.int(inputsLength))
 
 	return nil
 }
@@ -111,20 +117,10 @@ func (p *Predictor) ReadPredictionOutput(ctx context.Context) ([]tensor.Tensor, 
 	return ivalueToTensor(cPredictions), nil
 }
 
-func (p *Predictor) freeInputs() {
-	if p.inputs != nil {
-		return
-	}
-	inputSlice := (*[1 << 30]C.Torch_TensorContext)(unsafe.Pointer(p.inputs))[:p.inputsLength:p.inputsLength]
-	for _, input := range inputSlice {
+func (p *Predictor) finalize() {
+	for _, input := range p.inputs {
 		C.Torch_DeleteTensor(input)
 	}
-
-	C.free(unsafe.Pointer(p.inputs))
-}
-
-func (p *Predictor) finalize() {
-	p.freeInputs()
 	if p.ctx != nil {
 		C.Torch_PredictorDelete(p.ctx)
 	}

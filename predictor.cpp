@@ -53,13 +53,16 @@ Predictor::Predictor(const string &model_file, Torch_DeviceKind device) {
 }
 
 void Predictor::Predict(Torch_TensorContext *cInputs, int inputLength) {
-  std::vector<torch::jit::IValue> inputs(inputLength);
+  std::vector<torch::jit::IValue> inputs{};
 
   for (int ii = 0; ii < inputLength; ii++) {
     at::Tensor tensor = reinterpret_cast<Torch_Tensor *>(cInputs[ii])->tensor;
-    if (mode_ == torch::kCUDA) {
-      tensor = tensor.to(at::kCUDA);
+
+    std::cout << "tensor dim = " << tensor.dim() << " size = ";
+    for (auto sz : tensor.sizes()) {
+      std::cout << sz << ", ";
     }
+    std::cout << "\n";
     inputs.emplace_back(tensor);
   }
 

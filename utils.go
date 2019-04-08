@@ -4,6 +4,8 @@ package pytorch
 import "C"
 
 import (
+	"bytes"
+	"reflect"
 	"runtime"
 	"unsafe"
 
@@ -121,13 +123,20 @@ func fromType(ten *tensor.Dense) DType {
 	return UnknownType
 }
 
-func toTensorCtx(ten *tensor.Dense) C.Torch_TensorContext {
-	ptr := unsafe.Pointer(ten.Uintptr())
+func toTensorCtx(ten *tensor.Dense, device DeviceKind) C.Torch_TensorContext {
 	shape := make([]int64, len(ten.Shape()))
 	for ii, s := range ten.Shape() {
 		shape[ii] = int64(s)
 	}
-	return createTensor(ptr, shape, fromType(ten))
+
+	nbytes := ten.Dtype().Size() * uintptr(ten.DataSize())
+	dataPtr := unsafe.Pointer(C.malloc(C.size_t(nbytes)))
+	dataSlice := (*[1 << 30]byte)(dataPtr)[:nbytes:nbytes]
+
+	buf := bytes.NewBuffer(dataSlice[:0:nbytes])
+	encodeTensor(buf, reflect.ValueOf(ten.Data()), shape)
+
+	return createTensor(dataPtr, shape, fromType(ten), device)
 }
 
 func ivalueToTensor(ctx C.Torch_IValue) []tensor.Tensor {

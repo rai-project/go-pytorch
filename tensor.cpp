@@ -131,13 +131,25 @@ torch::IValue Torch_ConvertTorchIValueToIValue(Torch_IValue value) {
   return 0;
 }
 
-Torch_TensorContext Torch_NewTensor(void* input_data, int64_t* dimensions, int n_dim, Torch_DataType dtype) {
+Torch_TensorContext Torch_NewTensor(void* input_data, int64_t* dimensions, int n_dim, Torch_DataType dtype,
+                                    Torch_DeviceKind device) {
   torch::TensorOptions options = Torch_ConvertDataTypeToOptions(dtype);
   std::vector<int64_t> sizes;
   sizes.assign(dimensions, dimensions + n_dim);
 
+  std::cout << "device = " << (int)device << "\n";
+
+  if (device == CPU_DEVICE_KIND) {
+    options = options.device(torch::kCPU, 0);
+  } else if (device == CUDA_DEVICE_KIND) {
+    options = options.device(torch::kCUDA, 0);
+  }
+
   torch::Tensor ten = torch::from_blob(input_data, torch::IntArrayRef(sizes), options);
 
+  if (device == CUDA_DEVICE_KIND) {
+    ten = ten.to(torch::kCUDA);
+  }
   auto tensor = new Torch_Tensor();
   tensor->tensor = ten;
 

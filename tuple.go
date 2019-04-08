@@ -12,7 +12,7 @@ func NewTuple(vals ...interface{}) (Tuple, error) {
 		case *Tensor, Tuple:
 			tuple[i] = val
 		default:
-			tuple[i], err = NewTensor(val)
+			tuple[i], err = NewTensor(val, CPUDeviceKind)
 			if err != nil {
 				return nil, err
 			}

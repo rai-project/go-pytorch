@@ -41,8 +41,9 @@ func ResetError() {
 }
 
 func PanicOnError() {
-	if !HasError() {
+	msg := C.Torch_GetErrorString()
+	if msg == nil {
 		return
 	}
-	panic(GetErrorString())
+	panic(C.GoString(msg))
 }
