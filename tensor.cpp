@@ -1,5 +1,8 @@
 
 
+#include "error.hpp"
+#include "predictor.hpp"
+
 #include <algorithm>
 #include <iosfwd>
 #include <iostream>
@@ -9,8 +12,6 @@
 #include <utility>
 #include <vector>
 
-#include "error.hpp"
-#include "predictor.hpp"
 
 torch::TensorOptions Torch_ConvertDataTypeToOptions(Torch_DataType dtype) {
   torch::TensorOptions options;

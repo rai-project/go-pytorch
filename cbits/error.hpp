@@ -8,6 +8,8 @@
       free(errVar.message);          \
     }                                \
     errVar.message = 0;
+
+
 #define END_HANDLE_TH_ERRORS(errVar, retVal)              \
   }                                                       \
   catch (const torch::Error &e) {                         \
@@ -22,3 +24,5 @@
     errVar.message = strdup(msg);                         \
     return retVal;                                        \
   }
+
+// ignore me..
