@@ -1,5 +1,8 @@
 #ifdef ENABLE_PYTROCH_JIT
 
+#include "error.hpp"
+#include "predictor.hpp"
+
 #include <algorithm>
 #include <iosfwd>
 #include <iostream>
@@ -9,8 +12,6 @@
 #include <utility>
 #include <vector>
 
-#include "error.hpp"
-#include "predictor.hpp"
 
 extern Torch_IValue Torch_ConvertIValueToTorchIValue(torch::IValue value);
 

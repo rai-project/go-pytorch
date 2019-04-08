@@ -1,5 +1,11 @@
 
 
+#include "error.hpp"
+#include "predictor.hpp"
+#include "profiler.hpp"
+#include "timer.h"
+#include "timer.impl.hpp"
+
 #include <algorithm>
 #include <iosfwd>
 #include <iostream>
@@ -8,12 +14,6 @@
 #include <typeinfo>
 #include <utility>
 #include <vector>
-
-#include "error.hpp"
-#include "predictor.hpp"
-#include "profiler.hpp"
-#include "timer.h"
-#include "timer.impl.hpp"
 
 #if 0
 #define DEBUG_STMT std ::cout << __func__ << "  " << __LINE__ << "\n";
