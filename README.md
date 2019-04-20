@@ -4,15 +4,15 @@
 
 ## Libtorch Installation
 
-### Pre-built Binaries
+### Pre-built binaries
 
 Download the relevant `LibTorch` pre-built binary available on [Pytorch website](https://pytorch.org). Note that we provide the option of profiling through pytorch's in-built autograd profiler. Incidentally, Pytorch C++ frontend does not have access to the autograd profiler as per release `1.0.1`. Kindly download nightly build post March 24th 2019 to enable the profiling. Without profiling, our codebase should be compatible with prior versions.
 
-### Build From Source
+### Build from source
 
 Kindly refer to `dockerfiles` to know how to build `LibTorch` from source. Note that one can also use `build_libtorch.py` script provided as part of the Pytorch repository to do the same.
 
-## Build From Source using PIP
+### Build from source using python pip
 
 ```
 pip3 install torch torchvision
