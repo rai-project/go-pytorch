@@ -19,7 +19,22 @@ default_transform = transforms.Compose([
 image = default_transform(image)
 
 # forward
-boxes, labels, probs = traced_script_module(image.unsqueeze(0))
+all_probs, boxes = traced_script_module(image.unsqueeze(0))
+probs = []
+labels = []
+for pbatch in all_probs:
+      batch_labels = []
+      batch_probs = []
+      for p in pbatch:
+            idx = np.argmax(p.data.numpy())
+            batch_probs.append(p[idx])
+            batch_labels.append(idx)
+      probs.append(batch_probs)
+      labels.append(batch_labels)
+print(boxes.shape)
+print(boxes[0][1])
+print(labels[0][1])
+print(probs[0][1])
 #print(output[0, :10])
 
 # print top-5 predicted labels
