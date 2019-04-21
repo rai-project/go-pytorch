@@ -11,7 +11,7 @@ ARG FRAMEWORK_VERSION
 LABEL org.carml.go-pytorch.build-date=$BUILD_DATE \
   org.carml.go-pytorch.name="go-pytorch bindings for go" \
   org.carml.go-pytorch.description="" \
-  org.carml.go-pytorch.url="https://www.carml.org/" \
+  org.carml.go-pytorch.url="https://www.mlmodelscope.org/" \
   org.carml.go-pytorch.vcs-ref=$VCS_REF \
   org.carml.go-pytorch.vcs-url=$VCS_URL \
   org.carml.go-pytorch.vendor="MLModelScope" \
