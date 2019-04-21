@@ -34,3 +34,27 @@ go run main.go
 ```
 
 Go to `xxx:16686` to see the trace
+
+## Pytorch autograd profiler
+
+Autograd, which is Pytorch's automatic differentiation backend, has the ability to track each function being called. This data can be used to profile ML model inference/training. Recently, Pytorch's C++ frontend also got access to the requisite profile function call
+```
+autograd::profiler::RecordProfile
+```
+We envelop model inference call within this function call to generate a Tracer Viewer compatible `profile.trace` file. As explained in [Pytorch Profiler Documentation](https://docs.google.com/document/d/1CvAClvFfyA5R-PhYUmn5OOQtYMH4h6I0nSsKchNAySU/preview), the trace is a list of unordered events, with the format of each event as follows
+
+```
+{
+  "name": "_convolution",
+  "ph": "X",
+  "ts": 20555.611000,
+  "dur": 1865.102000,
+  "tid": 0,
+  "pid": "CPU Functions",
+  "args": {}
+}
+```
+
+where `name` is the name of the event (generally a kernel call correponding to a layer in the model), `ph` is the event type (for instance, `X` means complete), `ts` is the clock timestamp of the event, `dur` is the duration of the event, `tid` and `pid` are the IDs of the thread and process who output the event.
+
+To visualize the trace generated, one can go to `chrome://tracing` in Google Chrome and load the file.  
