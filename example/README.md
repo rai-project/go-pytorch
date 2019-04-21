@@ -35,13 +35,13 @@ go run main.go
 
 Go to `xxx:16686` to see the trace
 
-## Pytorch autograd profiler
+# Autograd profiler
 
-Autograd, which is Pytorch's automatic differentiation backend, has the ability to track each function being called. This data can be used to profile ML model inference/training. Recently, Pytorch's C++ frontend also got access to the requisite profile function call
+Autograd is the automatic differentiation backend of Pytorch which enables on-the-fly differentation. It has the ability to track each function being called. This data can be used to profile ML model inference/training. The C++ frontend of Pytorch has access to the following function which enables profiling.
 ```
-autograd::profiler::RecordProfile
+autograd::profiler::RecordProfile()
 ```
-We envelop model inference call within this function call to generate a Tracer Viewer compatible `profile.trace` file. As explained in [Pytorch Profiler Documentation](https://docs.google.com/document/d/1CvAClvFfyA5R-PhYUmn5OOQtYMH4h6I0nSsKchNAySU/preview), the trace is a list of unordered events, with the format of each event as follows
+We envelop model inference call within this function call to generate a Trace Viewer compatible `profile.trace` file. As explained in [Pytorch Profiler Documentation](https://docs.google.com/document/d/1CvAClvFfyA5R-PhYUmn5OOQtYMH4h6I0nSsKchNAySU/preview), the trace is a list of unordered events, with the format of each event as follows
 
 ```
 {
