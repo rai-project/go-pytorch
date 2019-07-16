@@ -1,7 +1,7 @@
 #ifndef __PREDICTOR_HPP__
 #define __PREDICTOR_HPP__
 
-#define _GLIBCXX_USE_CXX11_ABI 0
+#define _GLIBCXX_USE_CXX11_ABI 1
 
 #include <stddef.h>
 #include <stdint.h>
