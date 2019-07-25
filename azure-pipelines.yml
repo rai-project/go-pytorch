@@ -1,6 +1,8 @@
 jobs:
 - job: CPU
   timeoutInMinutes: 0
+  pool:
+    vmImage: 'Ubuntu 16.04'
   steps:
   - bash: |
      docker login -u $(DOCKER_USERNAME) -p $(DOCKER_PASSWORD)
@@ -9,6 +11,7 @@ jobs:
      ./push.sh docker_push_cpu
 - job: GPU
   timeoutInMinutes: 0
+  pool: 'Impact2'
   steps:
   - bash: |
      docker login -u $(DOCKER_USERNAME) -p $(DOCKER_PASSWORD)
@@ -21,3 +24,5 @@ jobs:
   - GPU
   steps:
   - script: 'curl -X POST https://hooks.microbadger.com/images/carml/go-pytorch/LhaNimlmXzse3g4UF1HZ1LfchSo='
+variables:
+- group: Docker Auth
