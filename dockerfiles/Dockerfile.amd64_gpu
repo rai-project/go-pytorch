@@ -68,7 +68,7 @@ RUN git clone --single-branch --depth=1 --recurse-submodules --branch=${BRANCH} 
   -DCMAKE_INSTALL_PREFIX=$PYTORCH_DIST_DIR \
   -DBUILD_TORCH=ON \
   -DBUILD_SHARED_LIBS=ON \
-  -DCMAKE_CXX_FLAGS="-D_GLIBCXX_USE_CXX11_ABI=1 -mcmodel=medium" \
+  -DCMAKE_CXX_FLAGS="-D_GLIBCXX_USE_CXX11_ABI=1" \
   -DUSE_OBSERVERS=ON \
   -DUSE_PROF=ON \
   -DBLAS=OpenBLAS \
@@ -85,8 +85,8 @@ RUN git clone --single-branch --depth=1 --recurse-submodules --branch=${BRANCH} 
   -DUSE_CUDA=ON \
   -DUSE_CUDNN=ON \
   -DCUDA_ARCH_NAME=Manual \
-  -DTORCH_CUDA_ARCH_LIST="3.0 3.5 3.7 5.0 5.2 5.3 6.0 6.1+PTX 7.0+PTX 7.5+PTX" \
-  -DPYTORCH_CUDA_ARCH_LIST="3.0 3.5 3.7 5.0 5.2 5.3 6.0 6.1+PTX 7.0+PTX 7.5+PTX" \
+  -DTORCH_CUDA_ARCH_LIST=3.5 5.0 5.2 6.0 6.1 7.0 7.5+PTX" \
+  -DPYTORCH_CUDA_ARCH_LIST="3.5 5.0 5.2 6.0 6.1 7.0 7.5+PTX" \
   && make install \
   && ldconfig \
   && make clean \
