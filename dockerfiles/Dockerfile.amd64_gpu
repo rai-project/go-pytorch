@@ -85,7 +85,7 @@ RUN git clone --single-branch --depth=1 --recurse-submodules --branch=${BRANCH} 
   -DUSE_CUDA=ON \
   -DUSE_CUDNN=ON \
   -DCUDA_ARCH_NAME=Manual \
-  -DTORCH_CUDA_ARCH_LIST=3.5 5.0 5.2 6.0 6.1 7.0 7.5+PTX" \
+  -DTORCH_CUDA_ARCH_LIST="3.5 5.0 5.2 6.0 6.1 7.0 7.5+PTX" \
   -DPYTORCH_CUDA_ARCH_LIST="3.5 5.0 5.2 6.0 6.1 7.0 7.5+PTX" \
   && make install \
   && ldconfig \
