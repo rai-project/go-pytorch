@@ -284,13 +284,14 @@
   version = "v1.2.4"
 
 [[projects]]
-  digest = "1:33f49b72fdad072a03d13b31a42edfff08088b7c27198f4073b8213a58884f27"
+  digest = "0:"
   name = "github.com/gogo/protobuf"
   packages = [
     "gogoproto",
     "proto",
     "protoc-gen-gogo/descriptor",
     "sortkeys",
+    "types",
   ]
   pruneopts = "T"
   revision = "ba06b47c162d49f2af050fb4c75bcbc86a159d5c"
@@ -618,7 +619,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:adb3a63a7464368629327a23ad13e8cda7fc004ff6d7e83d5bb4a2192bd07ddd"
+  digest = "0:"
   name = "github.com/rai-project/dlframework"
   packages = [
     ".",
@@ -626,7 +627,7 @@
     "framework/options",
   ]
   pruneopts = "T"
-  revision = "fd16e87531aad954ca7dc1c245d067e433172792"
+  revision = "93e476893f9e9d186315a13803106a552030e05f"
 
 [[projects]]
   branch = "master"
@@ -642,7 +643,7 @@
   name = "github.com/rai-project/go-pytorch"
   packages = ["."]
   pruneopts = "T"
-  revision = "43aa44ed7908e797bc7e9728c009e2fca7ee18a0"
+  revision = "c365c5577763f3d6c56fc4897771d1c9f2c67ef2"
 
 [[projects]]
   branch = "master"
@@ -753,12 +754,12 @@
   version = "v2.19.02"
 
 [[projects]]
-  digest = "1:e4c72127d910a96daf869a44f3dd563b86dbe6931a172863a0e99c5ff04b59e4"
+  digest = "0:"
   name = "github.com/sirupsen/logrus"
   packages = ["."]
   pruneopts = "T"
-  revision = "dae0fa8d5b0c810a8ab733fbd5510c7cae84eca4"
-  version = "v1.4.0"
+  revision = "839c75faf7f98a33d445d181f3018b5c3409a45e"
+  version = "v1.4.2"
 
 [[projects]]
   digest = "1:bb495ec276ab82d3dd08504bbc0594a65de8c3b22c6f2aaa92d05b73fbf3a82e"
@@ -904,7 +905,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:a2521b29be5d947082d5cf3fd6ea44e0eb46ea5448715763a84e0da19e24cfd2"
+  digest = "0:"
   name = "golang.org/x/crypto"
   packages = [
     "cast5",
@@ -914,7 +915,6 @@
     "openpgp/errors",
     "openpgp/packet",
     "openpgp/s2k",
-    "ssh/terminal",
   ]
   pruneopts = "T"
   revision = "a5d413f7728c81fb97d96a2b722368945f651e78"
@@ -1070,7 +1070,7 @@
   revision = "d831d65fe17df2e52bcc4316d4a9f7a418701f43"
 
 [[projects]]
-  digest = "1:c00eb80d7b152379c3e94c38d82b29deca98b1d0f53e4e20362589b7fcbffa07"
+  digest = "0:"
   name = "google.golang.org/grpc"
   packages = [
     ".",
@@ -1087,6 +1087,7 @@
     "grpclog",
     "internal",
     "internal/backoff",
+    "internal/balancerload",
     "internal/binarylog",
     "internal/channelz",
     "internal/envconfig",
@@ -1101,13 +1102,14 @@
     "resolver",
     "resolver/dns",
     "resolver/passthrough",
+    "serviceconfig",
     "stats",
     "status",
     "tap",
   ]
   pruneopts = "T"
-  revision = "3507fb8e1a5ad030303c106fef3a47c9fdad16ad"
-  version = "v1.19.1"
+  revision = "045159ad57f3781d409358e3ade910a018c16b30"
+  version = "v1.22.1"
 
 [[projects]]
   branch = "v2"

@@ -106,7 +106,12 @@ ENV LD_LIBRARY_PATH /opt/libtorch/lib:${LD_LIBRARY_PATH}
 ENV PKG github.com/rai-project/go-pytorch
 WORKDIR $GOPATH/src/$PKG
 
-RUN git clone --depth=1 --single-branch --branch=master  https://${PKG}.git . && \
-  dep ensure -vendor-only && \
-  go install -a -tags=nogpu -installsuffix cgo -ldflags "-s -w -X ${PKG}/Version=${VERSION} -X ${PKG}/GitCommit=${VCS_REF} -X ${PKG}/BuildDate=${BUILD_DATE}"&& \
+RUN git clone --depth=1 --single-branch --branch=master  https://${PKG}.git .
+
+RUN dep ensure -v -no-vendor -update \
+    github.com/rai-project/go-pytorch \
+    github.com/rai-project/dlframework && \
+    dep ensure -v -vendor-only
+
+RUN go install -a -tags=nogpu -installsuffix cgo -ldflags "-s -w -X ${PKG}/Version=${VERSION} -X ${PKG}/GitCommit=${VCS_REF} -X ${PKG}/BuildDate=${BUILD_DATE}"&& \
   rm -fr vendor
