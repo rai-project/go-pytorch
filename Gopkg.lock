@@ -343,7 +343,7 @@
   version = "v2.0.4"
 
 [[projects]]
-  digest = "1:4cbbca3db0ff89197d000fb2fa0b90ca4516a7fbd4d8cd9fa4bebf17df484f6d"
+  digest = "0:"
   name = "github.com/grpc-ecosystem/grpc-gateway"
   packages = [
     "internal",
@@ -351,8 +351,8 @@
     "utilities",
   ]
   pruneopts = "T"
-  revision = "20f268a412e5b342ebfb1a0eef7c3b7bd6c260ea"
-  version = "v1.8.5"
+  revision = "ad529a448ba494a88058f9e5be0988713174ac86"
+  version = "v1.9.5"
 
 [[projects]]
   digest = "1:af105c7c5dc0b4ae41991f122cae860b9600f7d226072c2a83127048c991660c"
@@ -671,11 +671,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:7d00eb6dcf14d69f8aab4be303cf07923cf025f8d5ac6ea9067bb6770951bb22"
+  digest = "0:"
   name = "github.com/rai-project/nvidia-smi"
   packages = ["."]
   pruneopts = "T"
-  revision = "5f6bbd4268777e33ec51313e4b6c0b89de084cbf"
+  revision = "864eb441c9ae3171601e2e9df942b9ca386612c0"
 
 [[projects]]
   branch = "master"
