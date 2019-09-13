@@ -123,13 +123,17 @@ torch::IValue Torch_ConvertTorchIValueToIValue(Torch_IValue value) {
     auto tuple = (Torch_IValueTuple*)value.data_ptr;
     std::vector<torch::IValue> values;
     values.reserve(tuple->length);
+    std::vector<c10::TypePtr> element_types;
+    element_types.reserve(tuple->length);
 
     for (int i = 0; i < tuple->length; i++) {
       auto ival = *(tuple->values + i);
       values.push_back(Torch_ConvertTorchIValueToIValue(ival));
+      // POTENTIAL BUG: assuming float tyoe for tensor
+      element_types.push_back(torch::jit::FloatType::get());
     }
-
-    return torch::jit::Tuple::create(std::move(values));
+    auto type = torch::jit::TupleType::create(element_types);
+    return torch::ivalue::Tuple::create(values, type);
   }
 
   // TODO handle this case

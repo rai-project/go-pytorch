@@ -30,8 +30,9 @@ class Predictor {
  public:
   Predictor(const string &model_file, Torch_DeviceKind device);
   void Predict(Torch_TensorContext *cInputs, int inputLength);
-
-  std::shared_ptr<torch::jit::script::Module> net_;
+  // API UPDATE: torch::jit::load() no longer returns a shared ptr
+  //std::shared_ptr<torch::jit::script::Module> net_;
+  torch::jit::script::Module net_;
   torch::IValue output_;
   torch::DeviceType mode_{torch::kCPU};
 
@@ -44,11 +45,14 @@ class Predictor {
 Predictor::Predictor(const string &model_file, Torch_DeviceKind device) {
   // Load the network
   net_ = torch::jit::load(model_file);
-  assert(net_ != nullptr);
+  // API UPDATE: != operator not defined for torch::jit::script::Module
+  //assert(net_ != nullptr);
   if (device == CUDA_DEVICE_KIND) mode_ = torch::kCUDA;
 
   if (mode_ == torch::kCUDA) {
-    net_->to(at::kCUDA);
+    // API UPDATE: net_ no longer a shared ptr
+    //net_->to(at::kCUDA);
+    net_.to(at::kCUDA);
   }
 }
 
@@ -70,10 +74,15 @@ void Predictor::Predict(Torch_TensorContext *cInputs, int inputLength) {
 #ifdef PROFILING_ENABLED
     autograd::profiler::RecordProfile profile_recorder(profile_filename_);
 #endif  // PROFILING_ENABLED
-    output_ = net_->forward(inputs);
+    // API UPDATE: net_ no longer a shared ptr
+    //output_ = net_->forward(inputs);
+    output_ = net_.forward(inputs);
     return;
   }
-  output_ = net_->forward(inputs);
+
+  // API UPDATE: net_ no longer a shared ptr
+  //output_ = net_->forward(inputs);
+  output_ = net_.forward(inputs);
 }
 
 Torch_PredictorContext Torch_NewPredictor(const char *model_file, Torch_DeviceKind mode) {
