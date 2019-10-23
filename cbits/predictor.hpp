@@ -15,6 +15,7 @@
 // profiling is enabled only if you have the include file
 #if __has_include(<autograd/profiler.h>)
 #include <autograd/profiler.h>
+#include <jit/code_template.h>
 #define PROFILING_ENABLED 1
 #endif  //  __has_include(<../../autograd/profiler.h>)
 #endif  // PROFILING_DISABLED
