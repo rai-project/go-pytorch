@@ -67,77 +67,12 @@ void Predictor::Predict(Torch_TensorContext *cInputs, int inputLength) {
     inputs.emplace_back(tensor);
   }
 
-  if ((profile_enabled_ == true) && (mode_ == torch::kCPU)) {
+  if (profile_enabled_ == true) {
     autograd::profiler::RecordProfile guard(profile_filename_);
     output_ = net_.forward(inputs);
     return;
   }
  
-  if ((profile_enabled_ == true) && (mode_ == torch::kCUDA)) {
-    autograd::profiler::enableProfiler(autograd::profiler::ProfilerConfig(autograd::profiler::ProfilerState::CUDA, true));
-    output_ = net_.forward(inputs);
-    // TODO: should we synchronize CUDA execution ?
-    autograd::profiler::thread_event_lists event_lists = autograd::profiler::disableProfiler();
-    std::vector<autograd::profiler::Event*> events;
-    for(auto& l: event_lists) {
-      for(auto& e: l) {
-        events.push_back(&e);
-        // DEBUG
-        //std::cout << "Event kind: " << e.name() << std::endl;
-      }
-    }
-    std::ofstream* file_ = new std::ofstream(profile_filename_);
-    std::ostream& out_ = *(file_);
-    // DEBUG
-    //std::cout << "Searching for start event..." << std::endl;
-    autograd::profiler::Event* start = nullptr;
-    for (autograd::profiler::Event* e : events) {
-      if(0 == strcmp(e->name(), "__start_profile")) {
-        start = e;
-        // DEBUG
-        //std::cout << "Found a start event in CUDA Profile!" << std::endl;
-        break;
-      }
-    }
-    //autograd::profiler::TORCH_CHECK(start, "could not find start event");
-    std::vector<autograd::profiler::Event*> stack;
-    out_ << "[\n";
-    bool first = true;
-    for (autograd::profiler::Event* e: events) {
-      if (e->kind() == "push") {
-        stack.push_back(e);
-      } else if (e->kind() == "pop") {
-        if(!first) {
-          out_ << ",\n";
-        }
-        first = false;
-        autograd::profiler::Event* e_start = stack.back();
-        stack.pop_back();
-        jit::TemplateEnv env;
-        env.s("name", e_start->name());
-        env.d("ts", start->cpu_elapsed_us(*e_start));
-        env.d("dur", e_start->cpu_elapsed_us(*e));
-        env.d("tid", e_start->thread_id());
-        static jit::CodeTemplate event_template(R"(
-        {
-          "name": "${name}",
-          "ph": "X",
-          "ts": ${ts},
-          "dur": ${dur},
-          "tid": ${tid},
-          "pid": "CUDA Functions",
-          "args": {}
-        })");
-        out_ << event_template.format(env);
-      }
-    }
-    out_ << "]\n"; 
-    if(file_)
-      file_->close();
-
-    return;
-  }
-
   output_ = net_.forward(inputs);
 }
 
