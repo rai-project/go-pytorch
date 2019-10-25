@@ -24,11 +24,10 @@ import (
 	"github.com/rai-project/go-pytorch"
 	"gorgonia.org/tensor"
 
-	//cupti "github.com/rai-project/go-cupti"
+	cupti "github.com/rai-project/go-cupti"
 	nvidiasmi "github.com/rai-project/nvidia-smi"
 	"github.com/rai-project/tracer"
 	_ "github.com/rai-project/tracer/all"
-	//"github.com/rai-project/tracer/ctimer"
 )
 
 var (
@@ -134,19 +133,16 @@ func main() {
 	}
 	defer predictor.Close()
 
-	//enableCupti := true
-
-	//var cu *cupti.CUPTI
-	//if enableCupti && nvidiasmi.HasGPU {
-	//  cu, err = cupti.New(cupti.Context(ctx))
-	//  if err != nil {
-	//    panic(err)
-	//  }
-	//}
+	enableCupti := false
+	var cu *cupti.CUPTI
+	if enableCupti && nvidiasmi.HasGPU {
+	  cu, err = cupti.New(cupti.Context(ctx))
+	  if err != nil {
+	    panic(err)
+	  }
+	}
 
 	predictor.EnableProfiling()
-
-	predictor.StartProfiling("predict", "")
 
 	err = predictor.Predict(ctx, []tensor.Tensor{
 		tensor.New(
@@ -159,24 +155,12 @@ func main() {
 		panic(err)
 	}
 
-	predictor.EndProfiling()
+	if enableCupti && nvidiasmi.HasGPU {
+	  cu.Wait()
+	  cu.Close()
+	}
 
-	//if enableCupti && nvidiasmi.HasGPU {
-	//  cu.Wait()
-	//  cu.Close()
-	//}
-
-	//profBuffer, err := predictor.ReadProfile()
-	//if err != nil {
-	//	panic(err)
-	//}
 	predictor.DisableProfiling()
-
-	//t, err := ctimer.New(profBuffer)
-	//if err != nil {
-	//	panic(err)
-	//}
-	//t.Publish(ctx, tracer.APPLICATION_TRACE)
 
 	outputs, err := predictor.ReadPredictionOutput(ctx)
 	if err != nil {
