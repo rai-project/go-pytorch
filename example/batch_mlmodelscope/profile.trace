@@ -1,0 +1,621 @@
+[
+
+{
+  "name": "contiguous",
+  "ph": "X",
+  "ts": 40292.498000,
+  "dur": 3.169000,
+  "tid": 0,
+  "pid": "CPU Functions",
+  "args": {}
+},
+
+{
+  "name": "cudnn_convolution",
+  "ph": "X",
+  "ts": 40309.157000,
+  "dur": 1231.606000,
+  "tid": 0,
+  "pid": "CPU Functions",
+  "args": {}
+},
+
+{
+  "name": "_convolution",
+  "ph": "X",
+  "ts": 40281.529000,
+  "dur": 1260.376000,
+  "tid": 0,
+  "pid": "CPU Functions",
+  "args": {}
+},
+
+{
+  "name": "threshold_",
+  "ph": "X",
+  "ts": 41552.971000,
+  "dur": 37.730000,
+  "tid": 0,
+  "pid": "CPU Functions",
+  "args": {}
+},
+
+{
+  "name": "max_pool2d_with_indices",
+  "ph": "X",
+  "ts": 41604.002000,
+  "dur": 27.120000,
+  "tid": 0,
+  "pid": "CPU Functions",
+  "args": {}
+},
+
+{
+  "name": "contiguous",
+  "ph": "X",
+  "ts": 41637.421000,
+  "dur": 0.232000,
+  "tid": 0,
+  "pid": "CPU Functions",
+  "args": {}
+},
+
+{
+  "name": "cudnn_convolution",
+  "ph": "X",
+  "ts": 41641.260000,
+  "dur": 171.456000,
+  "tid": 0,
+  "pid": "CPU Functions",
+  "args": {}
+},
+
+{
+  "name": "_convolution",
+  "ph": "X",
+  "ts": 41636.550000,
+  "dur": 176.590000,
+  "tid": 0,
+  "pid": "CPU Functions",
+  "args": {}
+},
+
+{
+  "name": "threshold_",
+  "ph": "X",
+  "ts": 41814.787000,
+  "dur": 11.506000,
+  "tid": 0,
+  "pid": "CPU Functions",
+  "args": {}
+},
+
+{
+  "name": "max_pool2d_with_indices",
+  "ph": "X",
+  "ts": 41830.355000,
+  "dur": 11.007000,
+  "tid": 0,
+  "pid": "CPU Functions",
+  "args": {}
+},
+
+{
+  "name": "contiguous",
+  "ph": "X",
+  "ts": 41846.198000,
+  "dur": 0.244000,
+  "tid": 0,
+  "pid": "CPU Functions",
+  "args": {}
+},
+
+{
+  "name": "cudnn_convolution",
+  "ph": "X",
+  "ts": 41848.898000,
+  "dur": 92.968000,
+  "tid": 0,
+  "pid": "CPU Functions",
+  "args": {}
+},
+
+{
+  "name": "_convolution",
+  "ph": "X",
+  "ts": 41845.654000,
+  "dur": 96.584000,
+  "tid": 0,
+  "pid": "CPU Functions",
+  "args": {}
+},
+
+{
+  "name": "threshold_",
+  "ph": "X",
+  "ts": 41943.260000,
+  "dur": 8.771000,
+  "tid": 0,
+  "pid": "CPU Functions",
+  "args": {}
+},
+
+{
+  "name": "contiguous",
+  "ph": "X",
+  "ts": 41956.331000,
+  "dur": 0.272000,
+  "tid": 0,
+  "pid": "CPU Functions",
+  "args": {}
+},
+
+{
+  "name": "cudnn_convolution",
+  "ph": "X",
+  "ts": 41958.310000,
+  "dur": 34.355000,
+  "tid": 0,
+  "pid": "CPU Functions",
+  "args": {}
+},
+
+{
+  "name": "_convolution",
+  "ph": "X",
+  "ts": 41953.470000,
+  "dur": 39.517000,
+  "tid": 0,
+  "pid": "CPU Functions",
+  "args": {}
+},
+
+{
+  "name": "threshold_",
+  "ph": "X",
+  "ts": 41993.737000,
+  "dur": 7.067000,
+  "tid": 0,
+  "pid": "CPU Functions",
+  "args": {}
+},
+
+{
+  "name": "contiguous",
+  "ph": "X",
+  "ts": 42002.961000,
+  "dur": 0.200000,
+  "tid": 0,
+  "pid": "CPU Functions",
+  "args": {}
+},
+
+{
+  "name": "cudnn_convolution",
+  "ph": "X",
+  "ts": 42004.524000,
+  "dur": 33.821000,
+  "tid": 0,
+  "pid": "CPU Functions",
+  "args": {}
+},
+
+{
+  "name": "_convolution",
+  "ph": "X",
+  "ts": 42002.311000,
+  "dur": 36.341000,
+  "tid": 0,
+  "pid": "CPU Functions",
+  "args": {}
+},
+
+{
+  "name": "threshold_",
+  "ph": "X",
+  "ts": 42039.312000,
+  "dur": 7.002000,
+  "tid": 0,
+  "pid": "CPU Functions",
+  "args": {}
+},
+
+{
+  "name": "max_pool2d_with_indices",
+  "ph": "X",
+  "ts": 42050.039000,
+  "dur": 12.247000,
+  "tid": 0,
+  "pid": "CPU Functions",
+  "args": {}
+},
+
+{
+  "name": "_adaptive_avg_pool2d",
+  "ph": "X",
+  "ts": 42076.870000,
+  "dur": 13.664000,
+  "tid": 0,
+  "pid": "CPU Functions",
+  "args": {}
+},
+
+{
+  "name": "adaptive_avg_pool2d",
+  "ph": "X",
+  "ts": 42068.338000,
+  "dur": 22.394000,
+  "tid": 0,
+  "pid": "CPU Functions",
+  "args": {}
+},
+
+{
+  "name": "view",
+  "ph": "X",
+  "ts": 42106.876000,
+  "dur": 20.068000,
+  "tid": 0,
+  "pid": "CPU Functions",
+  "args": {}
+},
+
+{
+  "name": "size",
+  "ph": "X",
+  "ts": 42129.738000,
+  "dur": 1.053000,
+  "tid": 0,
+  "pid": "CPU Functions",
+  "args": {}
+},
+
+{
+  "name": "empty",
+  "ph": "X",
+  "ts": 42143.579000,
+  "dur": 1.556000,
+  "tid": 0,
+  "pid": "CPU Functions",
+  "args": {}
+},
+
+{
+  "name": "uniform_",
+  "ph": "X",
+  "ts": 42147.906000,
+  "dur": 33.769000,
+  "tid": 0,
+  "pid": "CPU Functions",
+  "args": {}
+},
+
+{
+  "name": "rand_like",
+  "ph": "X",
+  "ts": 42137.478000,
+  "dur": 44.487000,
+  "tid": 0,
+  "pid": "CPU Functions",
+  "args": {}
+},
+
+{
+  "name": "lt",
+  "ph": "X",
+  "ts": 42186.262000,
+  "dur": 19841.073000,
+  "tid": 0,
+  "pid": "CPU Functions",
+  "args": {}
+},
+
+{
+  "name": "empty",
+  "ph": "X",
+  "ts": 62046.085000,
+  "dur": 6.444000,
+  "tid": 0,
+  "pid": "CPU Functions",
+  "args": {}
+},
+
+{
+  "name": "to",
+  "ph": "X",
+  "ts": 62043.643000,
+  "dur": 52.136000,
+  "tid": 0,
+  "pid": "CPU Functions",
+  "args": {}
+},
+
+{
+  "name": "type_as",
+  "ph": "X",
+  "ts": 62038.310000,
+  "dur": 58.337000,
+  "tid": 0,
+  "pid": "CPU Functions",
+  "args": {}
+},
+
+{
+  "name": "mul",
+  "ph": "X",
+  "ts": 62101.047000,
+  "dur": 55.985000,
+  "tid": 0,
+  "pid": "CPU Functions",
+  "args": {}
+},
+
+{
+  "name": "mul",
+  "ph": "X",
+  "ts": 62171.706000,
+  "dur": 62.367000,
+  "tid": 0,
+  "pid": "CPU Functions",
+  "args": {}
+},
+
+{
+  "name": "t",
+  "ph": "X",
+  "ts": 62251.879000,
+  "dur": 16.738000,
+  "tid": 0,
+  "pid": "CPU Functions",
+  "args": {}
+},
+
+{
+  "name": "mm",
+  "ph": "X",
+  "ts": 62283.790000,
+  "dur": 693.387000,
+  "tid": 0,
+  "pid": "CPU Functions",
+  "args": {}
+},
+
+{
+  "name": "add",
+  "ph": "X",
+  "ts": 62989.420000,
+  "dur": 55.458000,
+  "tid": 0,
+  "pid": "CPU Functions",
+  "args": {}
+},
+
+{
+  "name": "size",
+  "ph": "X",
+  "ts": 63053.926000,
+  "dur": 2.004000,
+  "tid": 0,
+  "pid": "CPU Functions",
+  "args": {}
+},
+
+{
+  "name": "size",
+  "ph": "X",
+  "ts": 63061.968000,
+  "dur": 0.601000,
+  "tid": 0,
+  "pid": "CPU Functions",
+  "args": {}
+},
+
+{
+  "name": "threshold_",
+  "ph": "X",
+  "ts": 63090.637000,
+  "dur": 32.142000,
+  "tid": 0,
+  "pid": "CPU Functions",
+  "args": {}
+},
+
+{
+  "name": "empty",
+  "ph": "X",
+  "ts": 63146.718000,
+  "dur": 5.327000,
+  "tid": 0,
+  "pid": "CPU Functions",
+  "args": {}
+},
+
+{
+  "name": "uniform_",
+  "ph": "X",
+  "ts": 63153.621000,
+  "dur": 21.551000,
+  "tid": 0,
+  "pid": "CPU Functions",
+  "args": {}
+},
+
+{
+  "name": "rand_like",
+  "ph": "X",
+  "ts": 63143.124000,
+  "dur": 33.118000,
+  "tid": 0,
+  "pid": "CPU Functions",
+  "args": {}
+},
+
+{
+  "name": "lt",
+  "ph": "X",
+  "ts": 63178.884000,
+  "dur": 91.050000,
+  "tid": 0,
+  "pid": "CPU Functions",
+  "args": {}
+},
+
+{
+  "name": "empty",
+  "ph": "X",
+  "ts": 63278.546000,
+  "dur": 3.866000,
+  "tid": 0,
+  "pid": "CPU Functions",
+  "args": {}
+},
+
+{
+  "name": "to",
+  "ph": "X",
+  "ts": 63276.886000,
+  "dur": 26.615000,
+  "tid": 0,
+  "pid": "CPU Functions",
+  "args": {}
+},
+
+{
+  "name": "type_as",
+  "ph": "X",
+  "ts": 63274.551000,
+  "dur": 29.682000,
+  "tid": 0,
+  "pid": "CPU Functions",
+  "args": {}
+},
+
+{
+  "name": "mul",
+  "ph": "X",
+  "ts": 63306.706000,
+  "dur": 26.948000,
+  "tid": 0,
+  "pid": "CPU Functions",
+  "args": {}
+},
+
+{
+  "name": "mul",
+  "ph": "X",
+  "ts": 63337.668000,
+  "dur": 39.744000,
+  "tid": 0,
+  "pid": "CPU Functions",
+  "args": {}
+},
+
+{
+  "name": "t",
+  "ph": "X",
+  "ts": 63383.004000,
+  "dur": 8.820000,
+  "tid": 0,
+  "pid": "CPU Functions",
+  "args": {}
+},
+
+{
+  "name": "mm",
+  "ph": "X",
+  "ts": 63394.104000,
+  "dur": 27.987000,
+  "tid": 0,
+  "pid": "CPU Functions",
+  "args": {}
+},
+
+{
+  "name": "add",
+  "ph": "X",
+  "ts": 63424.453000,
+  "dur": 26.649000,
+  "tid": 0,
+  "pid": "CPU Functions",
+  "args": {}
+},
+
+{
+  "name": "size",
+  "ph": "X",
+  "ts": 63454.668000,
+  "dur": 1.282000,
+  "tid": 0,
+  "pid": "CPU Functions",
+  "args": {}
+},
+
+{
+  "name": "size",
+  "ph": "X",
+  "ts": 63456.292000,
+  "dur": 0.478000,
+  "tid": 0,
+  "pid": "CPU Functions",
+  "args": {}
+},
+
+{
+  "name": "threshold_",
+  "ph": "X",
+  "ts": 63469.847000,
+  "dur": 25.673000,
+  "tid": 0,
+  "pid": "CPU Functions",
+  "args": {}
+},
+
+{
+  "name": "t",
+  "ph": "X",
+  "ts": 63511.738000,
+  "dur": 13.452000,
+  "tid": 0,
+  "pid": "CPU Functions",
+  "args": {}
+},
+
+{
+  "name": "mm",
+  "ph": "X",
+  "ts": 63526.774000,
+  "dur": 24.422000,
+  "tid": 0,
+  "pid": "CPU Functions",
+  "args": {}
+},
+
+{
+  "name": "add",
+  "ph": "X",
+  "ts": 63553.315000,
+  "dur": 27.605000,
+  "tid": 0,
+  "pid": "CPU Functions",
+  "args": {}
+},
+
+{
+  "name": "size",
+  "ph": "X",
+  "ts": 63583.952000,
+  "dur": 0.958000,
+  "tid": 0,
+  "pid": "CPU Functions",
+  "args": {}
+},
+
+{
+  "name": "size",
+  "ph": "X",
+  "ts": 63585.253000,
+  "dur": 0.379000,
+  "tid": 0,
+  "pid": "CPU Functions",
+  "args": {}
+}]

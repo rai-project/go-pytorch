@@ -129,6 +129,8 @@ func main() {
 	}
 	defer predictor.Close()
 
+	C.cudaProfilerStart()
+
 	err = predictor.Predict(ctx, []tensor.Tensor{
 		tensor.New(
 			tensor.Of(tensor.Float32),
@@ -139,8 +141,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-
-	C.cudaProfilerStart()
 
 	C.cudaDeviceSynchronize()
 	C.cudaProfilerStop()
