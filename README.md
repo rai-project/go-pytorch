@@ -1,71 +1,129 @@
-# Go Bindings for Pytorch
+# go-pytorch
 
 [![Build Status](https://dev.azure.com/dakkak/rai/_apis/build/status/rai-project.go-pytorch)](https://dev.azure.com/dakkak/rai/_build/latest?definitionId=10)
+[![Build Status](https://travis-ci.org/rai-project/go-pytorch.svg?branch=master)](https://travis-ci.org/rai-project/go-pytorch)
+[![Go Report Card](https://goreportcard.com/badge/github.com/rai-project/go-mxnet)](https://goreportcard.com/report/github.com/rai-project/go-pytorch)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-## Libtorch Installation
+[![](https://images.microbadger.com/badges/version/carml/go-pytorch:ppc64le-gpu-latest.svg)](https://microbadger.com/images/carml/go-pytorch:ppc64le-gpu-latest> 'Get your own version badge on microbadger.com') [![](https://images.microbadger.com/badges/version/carml/go-pytorch:ppc64le-cpu-latest.svg)](https://microbadger.com/images/carml/go-pytorch:ppc64le-cpu-latest 'Get your own version badge on microbadger.com') [![](https://images.microbadger.com/badges/version/carml/go-pytorch:amd64-cpu-latest.svg)](https://microbadger.com/images/carml/go-pytorch:amd64-cpu-latest 'Get your own version badge on microbadger.com') [![](https://images.microbadger.com/badges/version/carml/go-pytorch:amd64-gpu-latest.svg)](https://microbadger.com/images/carml/go-pytorch:amd64-gpu-latest 'Get your own version badge on microbadger.com')
 
-### Pre-built binaries
+Go binding for Pytorch C++ API.
+This is used by the [Pytorch agent](https://github.com/rai-project/pytorch) in [MLModelScope](mlmodelscope.org) to perform model inference in Go.
 
-Download the relevant `LibTorch` pre-built binary available on [Pytorch website](https://pytorch.org). Note that we provide the option of profiling through pytorch's in-built autograd profiler. Incidentally, Pytorch C++ frontend does not have access to the autograd profiler as per release `1.0.1`. Kindly download nightly build post March 24th 2019 to enable the profiling. Without profiling, our codebase should be compatible with prior versions.
+## Installation
 
-### Build from source
-
-Kindly refer to `dockerfiles` to know how to build `LibTorch` from source. Note that one can also use `build_libtorch.py` script provided as part of the Pytorch repository to do the same.
-
-### Build from source using python pip
-
-```
-pip3 install torch torchvision
-```
-
-or
+Download and install go-pytorch:
 
 ```
-conda install pytorch-nightly -c pytorch
+go get -v github.com/rai-project/go-pytorch
 ```
 
-then build using
+The binding requires Pytorch C++ (libtorch) and other Go packages.
+
+### Pytorch C++ (libtorch) Library
+
+The Pytorch C++ library is expected to be under `/opt/libtorch`.
+
+To install Pytorch C++ on your system, you can
+
+1. download pre-built binary from [Pytorch website](https://pytorch.org): Choose `Pytorch Build = Stable (1.3)`, `Your OS = <fill>`, `Package = LibTorch`, `Language = C++` and `CUDA = <fill>`. Then download `cxx11 ABI` version. Unzip the packaged directory and copy to `/opt/libtorch` (or modify the corresponding `CFLAGS` and `LDFLAGS` paths if using a custom location).
+
+2. build it from source: Refer to our [scripts](scripts) or the `LIBRARY INSTALLATION` section in the [dockefiles](dockerfiles).
+
+- The default blas is OpenBLAS.
+  The default OpenBLAS path for macOS is `/usr/local/opt/openblas` if installed throught homebrew (openblas is keg-only, which means it was not symlinked into /usr/local, because macOS provides BLAS and LAPACK in the Accelerate framework).
+
+- The default pytorch C++ installation path is `/opt/libtorch` for linux, darwin and ppc64le without powerai
+
+- The default CUDA path is `/usr/local/cuda`
+
+See [lib.go](lib.go) for details.
+
+If you get an error about not being able to write to `/opt` then perform the following
 
 ```
-go build -tags=nogpu -tags=python
+sudo mkdir -p /opt/libtorch
+sudo chown -R `whoami` /opt/libtorch
 ```
 
-## Use Other Library Paths
-
-We assume the default library location to be `/opt/libtorch`.
-To use different library paths, change CGO_CFLAGS, CGO_CXXFLAGS and CGO_LDFLAGS enviroment variables to add the corresponding framework library/non-library paths.
+If you are using Pytorch docker images or other libary paths, change CGO_CFLAGS, CGO_CXXFLAGS and CGO_LDFLAGS enviroment variables. Refer to [Using cgo with the go command](https://golang.org/cmd/cgo/#hdr-Using_cgo_with_the_go_command).
 
 For example,
 
 ```
-    export CGO_CFLAGS="${CGO_CFLAGS} -I /usr/local/cuda-9.2/include -I/usr/local/cuda-9.2/nvvm/include -I /usr/local/cuda-9.2/extras/CUPTI/include -I /usr/local/cuda-9.2/targets/x86_64-linux/include -I /usr/local/cuda-9.2/targets/x86_64-linux/include/crt"
-    export CGO_CXXFLAGS="${CGO_CXXFLAGS} -I /usr/local/cuda-9.2/include -I/usr/local/cuda-9.2/nvvm/include -I /usr/local/cuda-9.2/extras/CUPTI/include -I /usr/local/cuda-9.2/targets/x86_64-linux/include -I /usr/local/cuda-9.2/targets/x86_64-linux/include/crt"
-    export CGO_LDFLAGS="${CGO_LDFLAGS} -L /usr/local/nvidia/lib64 -L /usr/local/cuda-9.2/nvvm/lib64 -L /usr/local/cuda-9.2/lib64 -L /usr/local/cuda-9.2/lib64/stubs -L /usr/local/cuda-9.2/targets/x86_64-linux/lib/stubs/ -L /usr/local/cuda-9.2/lib64/stubs -L /usr/local/cuda-9.2/extras/CUPTI/lib64"
+    export CGO_CFLAGS="${CGO_CFLAGS} -I/tmp/libtorch/include"
+    export CGO_CXXFLAGS="${CGO_CXXFLAGS} -I/tmp/libtorch/include"
+    export CGO_LDFLAGS="${CGO_LDFLAGS} -L/tmp/libtorch/lib"
+```
+### Go Packages
+
+You can install the dependency through `go get`.
+
+```
+cd $GOPATH/src/github.com/rai-project/go-pytorch
+go get -u -v ./...
 ```
 
-Run `go build` in to check the Libtorch installation and library paths set-up.
+Or use [Dep](https://github.com/golang/dep).
 
-## Run Example
+```
+dep ensure -v
+```
 
-Make sure you have already [install mlmodelscope dependences](https://docs.mlmodelscope.org/installation/source/dependencies/) and [set up the external services](https://docs.mlmodelscope.org/installation/source/external_services/).
+This installs the dependency in `vendor/`.
 
+### Configure Environmental Variables
+
+Configure the linker environmental variables since the Pytorch C++ library is under a non-system directory. Place the following in either your `~/.bashrc` or `~/.zshrc` file
+
+Linux
+```
+export LIBRARY_PATH=$LIBRARY_PATH:/opt/libtorch/lib
+export LD_LIBRARY_PATH=/opt/libtorch/lib:$DYLD_LIBRARY_PATH
+
+```
+
+macOS
+```
+export LIBRARY_PATH=$LIBRARY_PATH:/opt/libtorch/lib
+export DYLD_LIBRARY_PATH=/opt/libtorch/lib:$DYLD_LIBRARY_PATH
+```
+## Check the Build
+
+Run `go build` in to check the dependences installation and library paths set-up.
 On linux, the default is to use GPU, if you don't have a GPU, do `go build -tags nogpu` instead of `go build`.
 
-### batch
-
-This example is to show how to use mlmodelscope tracing to profile the inference.
+**_Note_** : The CGO interface passes go pointers to the C API. This is an error by the CGO runtime. Disable the error by placing
 
 ```
-  cd example/batch
+export GODEBUG=cgocheck=0
+```
+
+in your `~/.bashrc` or `~/.zshrc` file and then run either `source ~/.bashrc` or `source ~/.zshrc`
+
+## Examples
+
+Examples of using the Go Pytorch binding to do model inference are under [examples](examples)
+
+### batch_mlmodelscope
+
+This example shows how to use the MLModelScope tracer to profile the inference.
+
+Refer to [Set up the external services](https://docs.mlmodelscope.org/installation/source/external_services/) to start the tracer.
+
+Then run the example by
+
+```
+  cd example/batch_mlmodelscope
   go build
   ./batch
 ```
 
-Then you can go to `localhost:16686` to look at the trace of that inference.
+Now you can go to `localhost:16686` to look at the trace of that inference.
 
 ### batch_nvprof
 
-You need GPU and CUDA to run this example. This example is to show how to use nvprof to profile the inference.
+This example shows how to use nvprof to profile the inference. You need GPU and CUDA to run this example.
 
 ```
   cd example/batch_nvprof
@@ -73,16 +131,8 @@ You need GPU and CUDA to run this example. This example is to show how to use nv
   nvprof --profile-from-start off ./batch_nvprof
 ```
 
-Refer to [Profiler User's Guide](https://docs.nvidia.com/cuda/profiler-users-guide/index.html) on how to use nvprof.
-
-## Debugging
-
-Build with the options `-gcflags "all=-N -l"` to disable inlining and optimizations.
-
-### For Darwin
-
-Go 1.11 started compressing debug information to reduce binary sizes. This is natively supported by Delve, but neither LLDB nor GDB support compressed debug info on macOS. If you are using LLDB or GDB, there are two workarounds: build binaries with `-ldflags=-compressdwarf=false`, or use `splitdwarf` (go get golang.org/x/tools/cmd/splitdwarf) to decompress the debug information in an existing binary.
+Refer to [Profiler User's Guide](https://docs.nvidia.com/cuda/profiler-users-guide/index.html) for using nvprof.
 
 ## Credits
 
-Parts of the implementation is borrowed from [orktes/go-torch](https://github.com/orktes/go-torch)
+Parts of the implementation have been borrowed from [orktes/go-torch](https://github.com/orktes/go-torch)
