@@ -59,7 +59,7 @@ RUN apt-get update && apt-get install -y sudo && rm -rf /var/lib/apt/lists/*
 
 # SOURCE INSTALLATION
 ENV PYTORCH_DIST_DIR /opt/libtorch
-ARG BRANCH=v1.1.0
+ARG BRANCH=v1.3.0
 
 RUN git clone --single-branch --depth=1 --recurse-submodules --branch=${BRANCH} https://github.com/pytorch/pytorch.git && cd pytorch && \
   git submodule update --init && \
@@ -109,7 +109,6 @@ WORKDIR $GOPATH/src/$PKG
 RUN git clone --depth=1 --single-branch --branch=master  https://${PKG}.git .
 
 RUN dep ensure -v -no-vendor -update \
-    github.com/rai-project/go-pytorch \
     github.com/rai-project/dlframework && \
     dep ensure -v -vendor-only
 

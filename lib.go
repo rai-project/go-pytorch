@@ -2,7 +2,7 @@ package pytorch
 
 // #cgo CXXFLAGS: -std=c++11 -I${SRCDIR}/cbits -g -O3
 // #cgo CFLAGS: -I${SRCDIR}/cbits -O3 -Wall -Wno-unused-variable -Wno-deprecated-declarations -Wno-c++11-narrowing -g -Wno-sign-compare -Wno-unused-function
-// #cgo LDFLAGS: -lstdc++ -ltorch -lcaffe2_nvrtc -lc10  -lglog
+// #cgo LDFLAGS: -lstdc++ -ltorch -lc10 -lglog
 // #cgo !python CXXFLAGS: -isystem /opt/libtorch/include
 // #cgo !python CXXFLAGS: -isystem /opt/libtorch/include/torch/csrc/api/include
 // #cgo !python CXXFLAGS: -isystem /opt/libtorch/include/torch/csrc
