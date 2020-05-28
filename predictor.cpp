@@ -32,7 +32,6 @@ class Predictor {
   torch::IValue output_;
   torch::DeviceType mode_{torch::kCPU};
 
-  std::stringstream ss_;
   profile *prof_{nullptr};
   std::string profile_filename_{"profile.trace"};
   bool profile_enabled_{false};
@@ -193,8 +192,11 @@ char *Torch_ProfilingRead(Torch_PredictorContext pred) {
   if (predictor->prof_ == nullptr) {
     return strdup("");
   }
-  const auto prof_output = predictor->ss_.str().c_str();
-  return strdup(prof_output);
+  
+  std::stringstream ss;
+  std::ifstream in(predictor->profile_filename_);
+  ss << in.rdbuf();
+  return strdup(ss.str().c_str());
 
   END_HANDLE_TH_ERRORS(Torch_GlobalError, (char *)0);
 }
