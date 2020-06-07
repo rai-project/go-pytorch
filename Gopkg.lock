@@ -705,7 +705,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:a6cb3e904be38e622c5c1fb9271018c37f15ab09bdf9becb1fe0d4f5377afd85"
+  digest = "0:"
   name = "github.com/rai-project/dlframework"
   packages = [
     ".",
@@ -713,7 +713,7 @@
     "framework/options",
   ]
   pruneopts = "T"
-  revision = "d642f9c121d88be304eb85e05e53aca3428d763b"
+  revision = "4aaa12cfa5874a785cbe70a2bc8a849472c7bc95"
 
 [[projects]]
   branch = "master"
@@ -784,7 +784,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:ffc0e7b5e9b5314623422c9b6e46542bd8e8866f749bd5dbe825db4867822584"
+  digest = "0:"
   name = "github.com/rai-project/tracer"
   packages = [
     ".",
@@ -797,7 +797,7 @@
     "zipkin",
   ]
   pruneopts = "T"
-  revision = "c5fab9c8969a5dc405c2d79caa909ac7501dbf27"
+  revision = "97d6a9677dc3a0e73fc9df74d366323884c19190"
 
 [[projects]]
   branch = "master"
@@ -1437,6 +1437,7 @@
     "github.com/anthonynsimon/bild/transform",
     "github.com/benesch/cgosymbolizer",
     "github.com/k0kubun/pp",
+    "github.com/opentracing/opentracing-go",
     "github.com/pkg/errors",
     "github.com/rai-project/config",
     "github.com/rai-project/dlframework",

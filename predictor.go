@@ -10,11 +10,15 @@ import (
 	"context"
 	"fmt"
 	"runtime"
+	"strings"
+	"time"
 	"unsafe"
 
 	"github.com/Unknwon/com"
+	"github.com/k0kubun/pp"
 	"github.com/pkg/errors"
 	"github.com/rai-project/dlframework/framework/options"
+	cupti "github.com/rai-project/go-cupti"
 	nvidiasmi "github.com/rai-project/nvidia-smi"
 	"github.com/rai-project/tracer"
 	"gorgonia.org/tensor"
@@ -24,6 +28,7 @@ type Predictor struct {
 	ctx     C.Torch_PredictorContext
 	inputs  []C.Torch_TensorContext
 	options *options.Options
+	cu      *cupti.CUPTI
 }
 
 func New(ctx context.Context, opts ...options.Option) (*Predictor, error) {
@@ -86,10 +91,44 @@ func (p *Predictor) Predict(ctx context.Context, inputs []tensor.Tensor) error {
 		inputSlice[ii] = toTensorCtx(dense, fromDevice(p.options))
 	}
 
-	predictSpan, _ := tracer.StartSpanFromContext(ctx, tracer.MODEL_TRACE, "c_predict")
+	predictSpan, ctx := tracer.StartSpanFromContext(ctx, tracer.MODEL_TRACE, "c_predict")
 	defer predictSpan.Finish()
 
+	if p.options.TraceLevel() >= tracer.FRAMEWORK_TRACE {
+		p.EnableProfiling()
+		start_time := time.Now().UnixNano()
+		err := p.StartProfiling("pytorch", "predict")
+		if err != nil {
+			log.WithError(err).WithField("framework", "pytorch").Error("unable to start framework profiling")
+		} else {
+			defer func() {
+				p.EndProfiling()
+				end_time := time.Now().UnixNano()
+
+				profBuffer, err := p.ReadProfile()
+				if err != nil {
+					pp.Println(err)
+					return
+				}
+				t, err := NewTrace(profBuffer, start_time, end_time)
+				if err != nil {
+					panic(err)
+					return
+				}
+				t.Publish(ctx, tracer.FRAMEWORK_TRACE)
+				p.DisableProfiling()
+			}()
+		}
+	}
+
+	err := p.cuptiStart(ctx)
+	if err != nil {
+		return err
+	}
+
 	C.Torch_PredictorRun(p.ctx, &inputSlice[0], C.int(inputsLength))
+
+	p.cuptiClose()
 
 	return GetError()
 }
@@ -133,6 +172,36 @@ func (p *Predictor) finalize() {
 
 func (p *Predictor) Close() {
 	p.finalize()
+}
+
+func (p *Predictor) cuptiStart(ctx context.Context) error {
+	if p.options.TraceLevel() < tracer.SYSTEM_LIBRARY_TRACE {
+		return nil
+	}
+	metrics := []string{}
+	if p.options.GPUMetrics() != "" {
+		metrics = strings.Split(p.options.GPUMetrics(), ",")
+	}
+
+	cu, err := cupti.New(cupti.Context(ctx),
+		cupti.SamplingPeriod(0),
+		cupti.Metrics(metrics),
+	)
+	if err != nil {
+		return err
+	}
+
+	p.cu = cu
+	return nil
+}
+
+func (p *Predictor) cuptiClose() {
+	if p.cu == nil {
+		return
+	}
+	p.cu.Wait()
+	p.cu.Close()
+	p.cu = nil
 }
 
 func init() {
