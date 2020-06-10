@@ -11,7 +11,6 @@ import (
 	"fmt"
 	"runtime"
 	"strings"
-	"time"
 	"unsafe"
 
 	"github.com/Unknwon/com"
@@ -96,21 +95,21 @@ func (p *Predictor) Predict(ctx context.Context, inputs []tensor.Tensor) error {
 
 	if p.options.TraceLevel() >= tracer.FRAMEWORK_TRACE {
 		p.EnableProfiling()
-		start_time := time.Now().UnixNano()
 		err := p.StartProfiling("pytorch", "predict")
 		if err != nil {
 			log.WithError(err).WithField("framework", "pytorch").Error("unable to start framework profiling")
 		} else {
 			defer func() {
 				p.EndProfiling()
-				end_time := time.Now().UnixNano()
+
+				start_time := int64(C.Torch_ProfilingGetStartTime(p.ctx))
 
 				profBuffer, err := p.ReadProfile()
 				if err != nil {
 					pp.Println(err)
 					return
 				}
-				t, err := NewTrace(profBuffer, start_time, end_time)
+				t, err := NewTrace(profBuffer, start_time)
 				if err != nil {
 					panic(err)
 					return

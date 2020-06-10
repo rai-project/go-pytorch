@@ -137,6 +137,8 @@ void Torch_ProfilingDisable(Torch_PredictorContext pred);
 
 char* Torch_ProfilingRead(Torch_PredictorContext pred);
 
+int64_t Torch_ProfilingGetStartTime(Torch_PredictorContext pred);
+
 // JIT
 #ifdef ENABLE_PYTROCH_JIT
 Torch_JITModuleContext Torch_CompileTorchScript(char* script, Torch_Error* error);

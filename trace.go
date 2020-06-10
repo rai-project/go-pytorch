@@ -35,7 +35,6 @@ func (t TraceEvents) Less(i, j int) bool { return t[i].Start < t[j].Start }
 
 type Trace struct {
 	StartTime   time.Time
-	EndTime     time.Time
 	TraceEvents TraceEvents
 }
 
@@ -43,18 +42,17 @@ func (t Trace) Len() int           { return t.TraceEvents.Len() }
 func (t Trace) Swap(i, j int)      { t.TraceEvents.Swap(i, j) }
 func (t Trace) Less(i, j int) bool { return t.TraceEvents.Less(i, j) }
 
-func NewTrace(data string, start_time int64, end_time int64) (*Trace, error) {
+func NewTrace(data string, start_time int64) (*Trace, error) {
 	trace := new(Trace)
 	err := json.Unmarshal([]byte(data), &trace.TraceEvents)
 	if err != nil {
 		return nil, err
 	}
 	trace.StartTime = time.Unix(0, start_time)
-	trace.EndTime = time.Unix(0, end_time)
 	for ii, event := range trace.TraceEvents {
-		trace.TraceEvents[ii].Start = start_time + int64(event.Timestamp * 1000)
+		trace.TraceEvents[ii].Start = start_time + int64(event.Timestamp*1000)
 		trace.TraceEvents[ii].StartTime = time.Unix(0, trace.TraceEvents[ii].Start)
-		trace.TraceEvents[ii].End = start_time + int64(event.Timestamp * 1000 + event.Duration * 1000)
+		trace.TraceEvents[ii].End = start_time + int64(event.Timestamp*1000+event.Duration*1000)
 		trace.TraceEvents[ii].EndTime = time.Unix(0, trace.TraceEvents[ii].End)
 	}
 	return trace, nil
