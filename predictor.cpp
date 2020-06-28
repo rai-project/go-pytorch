@@ -68,7 +68,7 @@ void Predictor::Predict(Torch_TensorContext *cInputs, int inputLength) {
 
   if (profile_enabled_ == true) {
     autograd::profiler::RecordProfile guard(profile_filename_);
-    profile_start = static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
+    profile_start = static_cast<int64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
     output_ = net_.forward(inputs);
     return;
   }
