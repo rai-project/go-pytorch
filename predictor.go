@@ -25,7 +25,6 @@ import (
 
 type Predictor struct {
 	ctx     C.Torch_PredictorContext
-	inputs  []C.Torch_TensorContext
 	options *options.Options
 	cu      *cupti.CUPTI
 }
@@ -89,6 +88,11 @@ func (p *Predictor) Predict(ctx context.Context, inputs []tensor.Tensor) error {
 		}
 		inputSlice[ii] = toTensorCtx(dense, fromDevice(p.options))
 	}
+	defer func() {
+		for _, input := range inputSlice {
+			C.Torch_DeleteTensor(input)
+		}
+	}()
 
 	predictSpan, ctx := tracer.StartSpanFromContext(ctx, tracer.MODEL_TRACE, "c_predict")
 	defer predictSpan.Finish()
@@ -159,9 +163,6 @@ func (p *Predictor) ReadPredictionOutput(ctx context.Context) ([]tensor.Tensor, 
 func (p *Predictor) finalize() {
 	if p == nil {
 		return
-	}
-	for _, input := range p.inputs {
-		C.Torch_DeleteTensor(input)
 	}
 	if p.ctx != nil {
 		C.Torch_PredictorDelete(p.ctx)
