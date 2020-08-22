@@ -5,6 +5,7 @@
 #include "timer.impl.hpp"
 
 #include <algorithm>
+#include <chrono>
 #include <iosfwd>
 #include <iostream>
 #include <memory>
@@ -35,6 +36,7 @@ class Predictor {
   profile *prof_{nullptr};
   std::string profile_filename_{"profile.trace"};
   bool profile_enabled_{false};
+  int64_t profile_start_;
 };
 
 Predictor::Predictor(const string &model_file, Torch_DeviceKind device) {
@@ -56,16 +58,20 @@ void Predictor::Predict(Torch_TensorContext *cInputs, int inputLength) {
   for (int ii = 0; ii < inputLength; ii++) {
     at::Tensor tensor = reinterpret_cast<Torch_Tensor *>(cInputs[ii])->tensor;
 
+#ifdef DEBUG
     std::cout << "tensor dim = " << tensor.dim() << " size = ";
     for (auto sz : tensor.sizes()) {
       std::cout << sz << ", ";
     }
     std::cout << "\n";
+#endif
+
     inputs.emplace_back(tensor);
   }
 
   if (profile_enabled_ == true) {
     autograd::profiler::RecordProfile guard(profile_filename_);
+    profile_start_ = static_cast<int64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
     output_ = net_.forward(inputs);
     return;
   }
@@ -200,3 +206,15 @@ char *Torch_ProfilingRead(Torch_PredictorContext pred) {
 
   END_HANDLE_TH_ERRORS(Torch_GlobalError, (char *)0);
 }
+
+int64_t Torch_ProfilingGetStartTime(Torch_PredictorContext pred) {
+  HANDLE_TH_ERRORS(Torch_GlobalError);
+  auto predictor = (Predictor *)pred;
+  if (predictor == nullptr) {
+    return 0;
+  }
+
+  return predictor->profile_start_;
+  END_HANDLE_TH_ERRORS(Torch_GlobalError, 0);
+}
+
